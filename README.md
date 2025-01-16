@@ -4,6 +4,18 @@ A Neovim plugin that adds retro gaming charm to your coding experience with 8-bi
 
 ## Features
 
+## Requirements
+
+- [Neovim](https://neovim.io/) >= 0.9.0
+
+### System Support Status
+
+| Operating System | Status | Notes |
+|-----------------|--------|-------|
+| macOS           | ✅     | Tested on macOS Sequoia 15.2 |
+| Linux           | 🚫     | Not currently supported |
+| Windows         | 🚫     | Not currently supported |
+
 ## Installation
 
 Using [lazy.nvim](https://github.com/folke/lazy.nvim):
