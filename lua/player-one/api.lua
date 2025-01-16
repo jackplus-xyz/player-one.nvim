@@ -9,9 +9,7 @@ function M.enable()
 end
 
 function M.disable()
-	if State.is_enabled then
-		State.is_enabled = false
-	end
+	State.is_enabled = false
 	Utils.stop()
 end
 

@@ -14,9 +14,9 @@ function M.setup(options)
 	vim.api.nvim_create_user_command("PlayerOneDisable", Api.disable, { desc = "Disable Player One" })
 	vim.api.nvim_create_user_command("PlayerOneToggle", Api.toggle, { desc = "Toggle Player One" })
 
-	-- if M.options.enabled then
-	-- 	Api.enable()
-	-- end
+	if M.options.enabled then
+		Api.enable()
+	end
 end
 
 return M
