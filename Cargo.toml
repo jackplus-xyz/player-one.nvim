@@ -1,5 +1,5 @@
 [package]
-name = "player_one_nvim"
+name = "playerone"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,5 +7,7 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-mlua = { version = "0.10.2", features = ["lua54", "module","serialize"] }
+mlua = { version = "0.10.2", features = ["luajit", "module", "serialize"] }
 rodio = "0.20.1"
+oorandom = "11.1.4"
+assert_approx_eq = "1.1"

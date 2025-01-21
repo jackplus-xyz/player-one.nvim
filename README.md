@@ -41,6 +41,13 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 
 ## Tips
 
+### Terminal Emulator
+
+Level up the immersive experience with a terminal emulator that supports custom shaders, such as:
+
+- [Ghostty](https://ghostty.org/): supports [customGLSL shader](https://ghostty.org/docs/config/reference#custom-shader)
+- [Rio](https://raphamorim.io/rio/): supports [RetroArch shaders](https://raphamorim.io/rio/docs/features/retroarch-shaders/)
+
 ### Color Scheme
 
 Use a color scheme with [base16](https://github.com/chriskempson/base16) colors for the extra retro touch:
@@ -55,12 +62,9 @@ Or a color scheme with vibrant colors on dark background:
   > [!TIP]
   > Try to setting `transparent` to true and use a dark terminal background.
 
-### Terminal Emulator
+### Fonts
 
-Level up the immersive experience with a terminal emulator that supports custom shaders, such as:
-
-- [Ghostty](https://ghostty.org/): supports [customGLSL shader](https://ghostty.org/docs/config/reference#custom-shader)
-- [Rio](https://raphamorim.io/rio/): supports [RetroArch shaders](https://raphamorim.io/rio/docs/features/retroarch-shaders/)
+Try to use a font that looks like it's from the past.
 
 ## Credits
 

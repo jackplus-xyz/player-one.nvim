@@ -1,12 +1,23 @@
 local M = {}
 
+-- Predefined sound configurations
 M.ui = {
-	enter = { frequency = 440.0, duration = 100, amplitude = 0.2 },
-	select = { frequency = 660.0, duration = 100, amplitude = 0.2 },
-	back = { frequency = 330.0, duration = 100, amplitude = 0.2 },
-	error = { frequency = 220.0, duration = 200, amplitude = 0.3 },
-	success = { frequency = 880.0, duration = 100, amplitude = 0.2 },
-	notification = { frequency = 550.0, duration = 150, amplitude = 0.2 },
+	enter = {},
+	select = {},
+	back = {},
+	error = {},
+	success = {},
+	notification = {},
 }
 
+-- Sound utilities
+function M.parse_json_config(json_string)
+	local ok, config = pcall(vim.json.decode, json_string)
+	if not ok then
+		error("Failed to parse sound configuration: " .. config)
+	end
+	return M.sanitize_config(config)
+end
+
 return M
+
