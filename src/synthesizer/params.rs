@@ -1,120 +1,35 @@
-use super::SAMPLE_RATE;
-
-#[derive(Clone, Copy, Debug)]
-pub enum WaveType {
-    Square,
-    Sawtooth,
-    Sine,
-    Noise,
-    Triangle,
-}
-
-impl Default for WaveType {
-    fn default() -> Self {
-        Self::Square
-    }
-}
-
-#[derive(Clone, Copy)]
-pub struct Envelope {
-    pub attack: f32,
-    pub sustain: f32,
-    pub punch: f32,
-    pub decay: f32,
-}
-
-impl Default for Envelope {
-    fn default() -> Self {
-        Self {
-            attack: 0.01,
-            sustain: 0.3,
-            punch: 0.0,
-            decay: 0.4,
-        }
-    }
-}
-
-#[derive(Clone, Copy)]
-pub struct Frequency {
-    pub base: f32,
-    pub limit: f32,
-    pub ramp: f32,
-    pub dramp: f32,
-}
-
-impl Default for Frequency {
-    fn default() -> Self {
-        Self {
-            base: 440.0,
-            limit: 0.0,
-            ramp: 0.0,
-            dramp: 0.0,
-        }
-    }
-}
-
-#[derive(Clone, Copy)]
-pub struct Vibrato {
-    pub strength: f32,
-    pub speed: f32,
-}
-
-impl Default for Vibrato {
-    fn default() -> Self {
-        Self {
-            strength: 0.0,
-            speed: 0.0,
-        }
-    }
-}
-
-#[derive(Clone, Copy)]
-pub struct Arpeggiation {
-    pub mult: f32,
-    pub speed: f32,
-}
-
-impl Default for Arpeggiation {
-    fn default() -> Self {
-        Self {
-            mult: 0.0,
-            speed: 0.0,
-        }
-    }
-}
-
-#[derive(Clone, Copy)]
-pub struct DutyCycle {
+#[derive(Debug, Clone)]
+pub struct SynthParams {
+    // Wave
+    pub wave_type: u8,
+    pub sample_rate: u32,
+    pub sample_size: u32,
+    // General
+    pub volume: f32,
+    pub repeat_speed: f32,
+    // Envelope
+    pub env_attack: f32,
+    pub env_sustain: f32,
+    pub env_punch: f32,
+    pub env_decay: f32,
+    // Frequency
+    pub freq_base: f32,
+    pub freq_limit: f32,
+    pub freq_ramp: f32,
+    pub freq_dramp: f32,
+    // Vibrato
+    pub vib_strength: f32,
+    pub vib_speed: f32,
+    // Arpeggiation
+    pub arp_mod: f32,
+    pub arp_speed: f32,
+    // Duty Cycle
     pub duty: f32,
-    pub ramp: f32,
-}
-
-impl Default for DutyCycle {
-    fn default() -> Self {
-        Self {
-            duty: 0.5,
-            ramp: 0.0,
-        }
-    }
-}
-
-#[derive(Clone, Copy)]
-pub struct Phaser {
-    pub offset: f32,
-    pub ramp: f32,
-}
-
-impl Default for Phaser {
-    fn default() -> Self {
-        Self {
-            offset: 0.0,
-            ramp: 0.0,
-        }
-    }
-}
-
-#[derive(Clone, Copy)]
-pub struct Filter {
+    pub duty_ramp: f32,
+    // Phaser
+    pub pha_offset: f32,
+    pub pha_ramp: f32,
+    // Filters
     pub lpf_freq: f32,
     pub lpf_ramp: f32,
     pub lpf_resonance: f32,
@@ -122,103 +37,35 @@ pub struct Filter {
     pub hpf_ramp: f32,
 }
 
-impl Default for Filter {
+impl Default for SynthParams {
     fn default() -> Self {
         Self {
-            lpf_freq: 1.0,
+            wave_type: 0, // Square
+            sample_rate: 44100,
+            sample_size: 8, // 8-bit samples
+            volume: 0.25,   // 25% volume to avoid clipping
+            repeat_speed: 0.0,
+            env_attack: 0.0,
+            env_sustain: 0.03, // Short sustain
+            env_punch: 0.42,   // Add punch to the sound
+            env_decay: 0.35,   // Medium decay
+            freq_base: 0.56,   // C4 note
+            freq_limit: 0.0,
+            freq_ramp: 0.0,
+            freq_dramp: 0.0,
+            vib_strength: 0.0,
+            vib_speed: 0.0,
+            arp_mod: 0.0,
+            arp_speed: 0.0,
+            duty: 0.0, // 50% duty cycle
+            duty_ramp: 0.0,
+            pha_offset: 0.0,
+            pha_ramp: 0.0,
+            lpf_freq: 1.0, // Low pass filter fully open
             lpf_ramp: 0.0,
             lpf_resonance: 0.0,
             hpf_freq: 0.0,
             hpf_ramp: 0.0,
-        }
-    }
-}
-
-#[derive(Clone, Copy)]
-pub struct General {
-    pub repeat_speed: f64,
-    pub volume: f64,
-    pub sample_rate: u32,
-    pub sample_size: u8,
-}
-
-impl Default for General {
-    fn default() -> Self {
-        Self {
-            repeat_speed: 0.0,
-            volume: 1.0,
-            sample_rate: SAMPLE_RATE,
-            sample_size: 16,
-        }
-    }
-}
-
-pub struct WaveConfig {
-    pub wave_type: WaveType,
-    pub duty_cycle: DutyCycle,
-}
-
-pub struct ModulationConfig {
-    pub vibrato: Vibrato,
-    pub phaser: Phaser,
-}
-
-pub struct SoundConfig {
-    pub envelope: Envelope,
-    pub frequency: Frequency,
-    pub arpeggiation: Arpeggiation,
-}
-
-#[derive(Clone, Default)]
-pub struct SynthParams {
-    pub wave_type: WaveType,
-    pub envelope: Envelope,
-    pub frequency: Frequency,
-    pub vibrato: Vibrato,
-    pub arpeggiation: Arpeggiation,
-    pub duty_cycle: DutyCycle,
-    pub phaser: Phaser,
-    pub filter: Filter,
-    pub general: General,
-}
-
-impl SynthParams {
-    pub fn new(
-        wave_config: Option<WaveConfig>,
-        sound_config: Option<SoundConfig>,
-        modulation_config: Option<ModulationConfig>,
-        filter: Option<Filter>,
-        general: Option<General>,
-    ) -> Self {
-        let default = Self::default();
-        let default_wave = WaveConfig {
-            wave_type: default.wave_type,
-            duty_cycle: default.duty_cycle,
-        };
-        let default_sound = SoundConfig {
-            envelope: default.envelope,
-            frequency: default.frequency,
-            arpeggiation: default.arpeggiation,
-        };
-        let default_mod = ModulationConfig {
-            vibrato: default.vibrato,
-            phaser: default.phaser,
-        };
-
-        let wave = wave_config.unwrap_or(default_wave);
-        let sound = sound_config.unwrap_or(default_sound);
-        let modulation = modulation_config.unwrap_or(default_mod);
-
-        SynthParams {
-            wave_type: wave.wave_type,
-            duty_cycle: wave.duty_cycle,
-            envelope: sound.envelope,
-            frequency: sound.frequency,
-            arpeggiation: sound.arpeggiation,
-            vibrato: modulation.vibrato,
-            phaser: modulation.phaser,
-            filter: filter.unwrap_or(default.filter),
-            general: general.unwrap_or(default.general),
         }
     }
 }
