@@ -3,7 +3,7 @@ mod playback;
 mod synthesizer;
 
 pub use playback::{error::PlaybackError, Playback};
-pub use synthesizer::{SynthParams, Synthesizer, WaveType};
+pub use synthesizer::SynthParams;
 
 #[mlua::lua_module]
 fn libplayerone(lua: &mlua::Lua) -> mlua::Result<mlua::Table> {

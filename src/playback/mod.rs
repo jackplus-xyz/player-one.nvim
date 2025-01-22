@@ -1,6 +1,6 @@
 pub mod error;
 
-use crate::synthesizer::{SynthParams, Synthesizer, MAX_FREQUENCY, MIN_FREQUENCY};
+use crate::synthesizer::SynthParams;
 use error::PlaybackError;
 use rodio::{OutputStream, Sink};
 use std::sync::{Arc, Mutex};
@@ -8,6 +8,9 @@ use std::sync::{Arc, Mutex};
 pub const MAX_AMPLITUDE: f32 = 1.0;
 pub const MIN_AMPLITUDE: f32 = 0.0;
 pub const DEFAULT_VOLUME: f32 = 1.0;
+
+pub const MAX_FREQUENCY: f32 = 22050.0; // Nyquist frequency for 44.1kHz
+pub const MIN_FREQUENCY: f32 = 20.0; // Lower limit of human hearing
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum PlaybackState {
@@ -24,7 +27,6 @@ pub struct Playback {
     volume: Arc<Mutex<f32>>,
 }
 
-// We need Send + Sync for thread safety
 unsafe impl Send for Playback {}
 unsafe impl Sync for Playback {}
 
@@ -49,24 +51,21 @@ impl Playback {
     }
 
     fn validate_sound_params(params: &SynthParams) -> Result<(), PlaybackError> {
-        if !(MIN_FREQUENCY..=MAX_FREQUENCY).contains(&params.frequency.base) {
+        if !(MIN_FREQUENCY..=MAX_FREQUENCY).contains(&params.freq_base) {
             return Err(PlaybackError::InvalidParameter(format!(
                 "Base frequency must be between {} and {} Hz",
                 MIN_FREQUENCY, MAX_FREQUENCY
             )));
         }
 
-        if !(MIN_AMPLITUDE..=MAX_AMPLITUDE).contains(&(params.general.volume as f32)) {
+        if !(MIN_AMPLITUDE..=MAX_AMPLITUDE).contains(&params.volume) {
             return Err(PlaybackError::InvalidParameter(format!(
                 "Volume must be between {} and {}",
                 MIN_AMPLITUDE, MAX_AMPLITUDE
             )));
         }
 
-        if params.envelope.attack < 0.0
-            || params.envelope.sustain < 0.0
-            || params.envelope.decay < 0.0
-        {
+        if params.env_attack < 0.0 || params.env_sustain < 0.0 || params.env_decay < 0.0 {
             return Err(PlaybackError::InvalidParameter(
                 "Envelope parameters must be non-negative".into(),
             ));
@@ -83,9 +82,11 @@ impl Playback {
 
         // Apply current volume scaling
         let volume = self.get_volume()?;
-        params.general.volume *= volume as f64;
+        params.volume *= volume;
 
-        let source = Synthesizer::new(params);
+        // Create SynthSource directly instead of using Synthesizer
+        use crate::synthesizer::SynthSource;
+        let source = SynthSource::new(params);
         sink.append(source);
 
         // Update state
@@ -97,12 +98,6 @@ impl Playback {
         Ok(())
     }
 
-    pub fn play_blocking(&self, params: SynthParams) -> Result<(), PlaybackError> {
-        self.play(params)?;
-        self.wait_until_end()?;
-        Ok(())
-    }
-
     pub fn stop(&self) -> Result<(), PlaybackError> {
         let sink = self.sink.lock().map_err(|e| {
             PlaybackError::PlaybackError(format!("Failed to acquire sink lock: {}", e))
@@ -110,14 +105,14 @@ impl Playback {
 
         // First, stop accepting new samples
         sink.pause();
-        
+
         // Wait for the current samples to finish playing, with a timeout
         let timeout = std::time::Duration::from_millis(100);
         let start = std::time::Instant::now();
         while !sink.empty() && start.elapsed() < timeout {
             std::thread::sleep(std::time::Duration::from_millis(10));
         }
-        
+
         // Now clear the sink
         sink.stop();
 
