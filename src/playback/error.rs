@@ -1,11 +1,12 @@
-#[derive(Debug)]
+use thiserror::Error;
+
+#[derive(Error, Debug)]
 pub enum PlaybackError {
     DeviceError(String),
     InvalidParameter(String),
     PlaybackError(String),
 }
 
-impl std::error::Error for PlaybackError {}
 impl std::fmt::Display for PlaybackError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
