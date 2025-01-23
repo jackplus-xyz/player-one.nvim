@@ -9,7 +9,7 @@ pub const MAX_AMPLITUDE: f32 = 1.0;
 pub const MIN_AMPLITUDE: f32 = 0.0;
 pub const DEFAULT_VOLUME: f32 = 1.0;
 
-pub const MAX_FREQUENCY: f32 = 22050.0; // Nyquist frequency for 44.1kHz
+pub const MAX_FREQUENCY: f32 = 22050.0; // Higher limit of human hearing
 pub const MIN_FREQUENCY: f32 = 20.0; // Lower limit of human hearing
 
 #[derive(Debug, Clone, PartialEq)]
@@ -50,7 +50,7 @@ impl Playback {
         })
     }
 
-    fn validate_sound_params(params: &SynthParams) -> Result<(), PlaybackError> {
+    fn validate(params: &SynthParams) -> Result<(), PlaybackError> {
         if !(MIN_FREQUENCY..=MAX_FREQUENCY).contains(&params.freq_base) {
             return Err(PlaybackError::InvalidParameter(format!(
                 "Base frequency must be between {} and {} Hz",
@@ -74,7 +74,7 @@ impl Playback {
     }
 
     pub fn play(&self, mut params: SynthParams) -> Result<(), PlaybackError> {
-        Self::validate_sound_params(&params)?;
+        Self::validate(&params)?;
 
         let sink = self.sink.lock().map_err(|e| {
             PlaybackError::PlaybackError(format!("Failed to acquire sink lock: {}", e))

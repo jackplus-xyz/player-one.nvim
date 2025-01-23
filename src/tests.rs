@@ -56,11 +56,13 @@ fn test_synth_params_default() {
 fn test_sound_playback() {
     let playback = Playback::new().unwrap();
     let params = SynthParams {
-        freq_base: 440.0, // A4 note
-        env_attack: 0.01,
-        env_sustain: 0.02,
-        env_decay: 0.02,
-        volume: 0.5,
+        env_attack: 0.1,   // Longer attack time
+        env_sustain: 0.5,  // Longer sustain
+        env_decay: 0.5,    // Longer decay
+        freq_base: 440.0,  // A4 note
+        volume: 0.5,       // Increased volume
+        vib_strength: 0.3, // Add some vibrato
+        vib_speed: 4.0,    // Moderate vibrato speed
         ..Default::default()
     };
 
@@ -86,11 +88,6 @@ fn test_sound_playback() {
 fn test_playback_controls() {
     let playback = Playback::new().unwrap();
     let params = SynthParams {
-        freq_base: 440.0, // Add a valid frequency
-        volume: 0.5,      // Add a valid volume
-        env_sustain: 0.5, // Longer sustain for testing controls
-        env_attack: 0.01, // Add reasonable envelope parameters
-        env_decay: 0.1,
         ..Default::default()
     };
 
@@ -174,12 +171,7 @@ fn test_concurrent_playback() {
 #[test]
 fn test_waveform_types() {
     let playback = Playback::new().unwrap();
-    let base_params = SynthParams {
-        freq_base: 440.0, // Add a valid frequency
-        volume: 0.5,      // Add a valid volume
-        env_sustain: 0.1,
-        env_attack: 0.01, // Add reasonable envelope parameters
-        env_decay: 0.1,
+    let params = SynthParams {
         ..Default::default()
     };
 
@@ -187,7 +179,7 @@ fn test_waveform_types() {
     for wave_type in 0..=4 {
         let test_params = SynthParams {
             wave_type,
-            ..base_params.clone()
+            ..params.clone()
         };
         assert!(playback.play(test_params).is_ok());
         std::thread::sleep(Duration::from_millis(50));
@@ -215,4 +207,274 @@ fn test_sink_drop_behavior() {
 
     // Create new instance to ensure we can still create playback after dropping
     assert!(Playback::new().is_ok());
+}
+
+#[test]
+fn test_play_notes_c4_to_c5() {
+    let playback = Playback::new().unwrap();
+    let base_params = SynthParams {
+        ..Default::default()
+    };
+
+    // Frequencies for notes from C4 to C5
+    let frequencies = [
+        261.63, // C4
+        277.18, // C#4/Db4
+        293.66, // D4
+        311.13, // D#4/Eb4
+        329.63, // E4
+        349.23, // F4
+        369.99, // F#4/Gb4
+        392.00, // G4
+        415.30, // G#4/Ab4
+        440.00, // A4
+        466.16, // A#4/Bb4
+        493.88, // B4
+        523.25, // C5
+    ];
+
+    for &freq in frequencies.iter() {
+        let test_params = SynthParams {
+            freq_base: freq,
+            ..base_params.clone()
+        };
+        assert!(playback.play(test_params).is_ok());
+        std::thread::sleep(Duration::from_millis(100));
+        assert!(playback.stop().is_ok());
+    }
+}
+
+#[test]
+fn test_envelope_behavior() {
+    let playback = Playback::new().unwrap();
+
+    // Test different envelope configurations
+    let test_cases = vec![
+        // Fast attack, long sustain
+        SynthParams {
+            env_attack: 0.01,
+            env_sustain: 0.5,
+            env_decay: 0.1,
+            env_punch: 0.0,
+            ..Default::default()
+        },
+        // Long attack, short sustain
+        SynthParams {
+            env_attack: 0.3,
+            env_sustain: 0.1,
+            env_decay: 0.1,
+            env_punch: 0.2,
+            ..Default::default()
+        },
+        // Max envelope values
+        SynthParams {
+            env_attack: 1.0,
+            env_sustain: 1.0,
+            env_decay: 1.0,
+            env_punch: 1.0,
+            ..Default::default()
+        },
+    ];
+
+    for params in test_cases {
+        assert!(playback.play(params).is_ok());
+        std::thread::sleep(Duration::from_millis(50));
+        assert!(playback.stop().is_ok());
+    }
+}
+
+#[test]
+fn test_vibrato_effects() {
+    let playback = Playback::new().unwrap();
+
+    let test_cases = vec![
+        // Light vibrato
+        SynthParams {
+            vib_strength: 0.1,
+            vib_speed: 2.0,
+            ..Default::default()
+        },
+        // Heavy vibrato
+        SynthParams {
+            vib_strength: 0.8,
+            vib_speed: 8.0,
+            ..Default::default()
+        },
+        // Extreme values
+        SynthParams {
+            vib_strength: 1.0,
+            vib_speed: 10.0,
+            ..Default::default()
+        },
+    ];
+
+    for params in test_cases {
+        assert!(playback.play(params).is_ok());
+        std::thread::sleep(Duration::from_millis(100));
+        assert!(playback.stop().is_ok());
+    }
+}
+
+#[test]
+fn test_filter_effects() {
+    let playback = Playback::new().unwrap();
+
+    let test_cases = vec![
+        // Low-pass filter
+        SynthParams {
+            lpf_freq: 0.5,
+            lpf_ramp: 0.1,
+            lpf_resonance: 0.5,
+            ..Default::default()
+        },
+        // High-pass filter
+        SynthParams {
+            hpf_freq: 0.3,
+            hpf_ramp: 0.1,
+            ..Default::default()
+        },
+        // Both filters
+        SynthParams {
+            lpf_freq: 0.7,
+            lpf_resonance: 0.3,
+            hpf_freq: 0.2,
+            ..Default::default()
+        },
+    ];
+
+    for params in test_cases {
+        assert!(playback.play(params).is_ok());
+        std::thread::sleep(Duration::from_millis(100));
+        assert!(playback.stop().is_ok());
+    }
+}
+
+#[test]
+fn test_json_parameters() {
+    let json_params = r#"{
+        "wave_type": 0,
+        "p_env_attack": 0.0,
+        "p_env_sustain": 0.3,
+        "p_env_punch": 0.0,
+        "p_env_decay": 0.4,
+        "p_base_freq": 0.3,
+        "p_freq_limit": 0.0,
+        "p_freq_ramp": 0.0,
+        "p_freq_dramp": 0.0,
+        "p_vib_strength": 0.0,
+        "p_vib_speed": 0.0,
+        "p_arp_mod": 0.0,
+        "p_arp_speed": 0.0,
+        "p_duty": 0.0,
+        "p_duty_ramp": 0.0,
+        "p_repeat_speed": 0.0,
+        "p_pha_offset": 0.0,
+        "p_pha_ramp": 0.0,
+        "p_lpf_freq": 1.0,
+        "p_lpf_ramp": 0.0,
+        "p_lpf_resonance": 0.0,
+        "p_hpf_freq": 0.0,
+        "p_hpf_ramp": 0.0,
+        "sound_vol": 0.25,
+        "sample_rate": 44100,
+        "sample_size": 8
+    }"#;
+
+    let params = SynthParams::from_json(json_params);
+    assert!(params.is_ok());
+
+    // Test invalid JSON
+    let invalid_json = r#"{"wave_type": "invalid"}"#;
+    assert!(SynthParams::from_json(invalid_json).is_err());
+}
+
+#[test]
+fn test_edge_case_parameters() {
+    let playback = Playback::new().unwrap();
+
+    // Test parameter ranges
+    let edge_cases = vec![
+        // Minimum valid frequency
+        SynthParams {
+            freq_base: 20.0,
+            ..Default::default()
+        },
+        // Maximum valid frequency
+        SynthParams {
+            freq_base: 22050.0,
+            ..Default::default()
+        },
+        // Minimum volume
+        SynthParams {
+            volume: 0.0,
+            ..Default::default()
+        },
+        // Maximum volume
+        SynthParams {
+            volume: 1.0,
+            ..Default::default()
+        },
+    ];
+
+    for params in edge_cases {
+        assert!(playback.play(params).is_ok());
+        std::thread::sleep(Duration::from_millis(50));
+        assert!(playback.stop().is_ok());
+    }
+}
+
+#[test]
+fn test_error_handling() {
+    let playback = Playback::new().unwrap();
+
+    // Test concurrent operations
+    let params = SynthParams::default();
+    assert!(playback.play(params.clone()).is_ok());
+
+    // Try to pause while stopped
+    playback.stop().unwrap();
+    assert!(playback.pause().is_ok());
+
+    // Try to resume while stopped
+    assert!(playback.resume().is_ok());
+
+    // Test invalid state transitions
+    playback.stop().unwrap();
+    assert!(playback.stop().is_ok()); // Should handle double stop gracefully
+}
+
+#[test]
+fn test_state_transitions() {
+    let playback = Playback::new().unwrap();
+    let params = SynthParams::default();
+
+    // Test full state cycle
+    assert!(matches!(
+        playback.get_state().unwrap(),
+        PlaybackState::Stopped
+    ));
+
+    playback.play(params.clone()).unwrap();
+    assert!(matches!(
+        playback.get_state().unwrap(),
+        PlaybackState::Playing
+    ));
+
+    playback.pause().unwrap();
+    assert!(matches!(
+        playback.get_state().unwrap(),
+        PlaybackState::Paused
+    ));
+
+    playback.resume().unwrap();
+    assert!(matches!(
+        playback.get_state().unwrap(),
+        PlaybackState::Playing
+    ));
+
+    playback.stop().unwrap();
+    assert!(matches!(
+        playback.get_state().unwrap(),
+        PlaybackState::Stopped
+    ));
 }

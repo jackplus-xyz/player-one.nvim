@@ -142,7 +142,7 @@ impl SynthSource {
         let hpf_freq = self.params.hpf_freq
             + self.params.hpf_ramp * (self.sample_clock as f32 / self.params.sample_rate as f32);
         if hpf_freq > 0.0 {
-            sample = sample - self.last_sample;
+            sample -= self.last_sample;
             self.last_sample = sample;
             sample *= hpf_freq;
         }
