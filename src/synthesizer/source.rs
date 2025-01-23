@@ -23,7 +23,7 @@ impl SynthSource {
     }
 
     fn synthesize(&mut self) -> f32 {
-        let frequency = 440.0 * self.params.freq_base;
+        let frequency = self.params.freq_base;
         let period = self.params.sample_rate as f32 / frequency;
 
         self.phase += 1.0;
