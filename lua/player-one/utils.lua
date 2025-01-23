@@ -1,8 +1,4 @@
--- TODO: set up library path and load library based on the os
-package.cpath = package.cpath .. ";/Users/jj/Developer/projects/player-one.nvim/target/debug/?.dylib"
-
--- Load the Rust module
-local Lib = require("libplayerone")
+local Lib = require("player-one.lib")
 local Sounds = require("player-one.sounds")
 
 local M = {}
