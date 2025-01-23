@@ -9,7 +9,7 @@ fn test_playback_initialization() {
     assert!(playback.is_ok());
 
     let playback = playback.unwrap();
-    assert_eq!(playback.get_volume().unwrap(), 1.0); // DEFAULT_VOLUME
+    assert_eq!(playback.get_volume().unwrap(), 1.0);
     assert!(matches!(
         playback.get_state().unwrap(),
         PlaybackState::Stopped
@@ -210,7 +210,7 @@ fn test_sink_drop_behavior() {
 }
 
 #[test]
-fn test_play_notes_c4_to_c5() {
+fn test_play_notes() {
     let playback = Playback::new().unwrap();
     let base_params = SynthParams {
         ..Default::default()
@@ -477,4 +477,100 @@ fn test_state_transitions() {
         playback.get_state().unwrap(),
         PlaybackState::Stopped
     ));
+}
+
+#[test]
+fn test_specific_sound_parameters() {
+    let json_params = r#"{
+        "wave_type": 1,
+        "p_env_attack": 0.0,
+        "p_env_sustain": 0.2085214052828498,
+        "p_env_punch": 0.07627120320112912,
+        "p_env_decay": 0.6375892081597456,
+        "p_base_freq": 0.2723171360931539,
+        "p_freq_limit": 0.0,
+        "p_freq_ramp": 0.0,
+        "p_freq_dramp": 0.0,
+        "p_vib_strength": 0.0,
+        "p_vib_speed": 0.0,
+        "p_arp_mod": 0.7454,
+        "p_arp_speed": 0.8026369371272526,
+        "p_duty": 0.19997913173878423,
+        "p_duty_ramp": 0.0,
+        "p_repeat_speed": 0.0,
+        "p_pha_offset": 0.0,
+        "p_pha_ramp": 0.0,
+        "p_lpf_freq": 0.10977949670708084,
+        "p_lpf_ramp": 0.888955760020286,
+        "p_lpf_resonance": 0.19946614651039674,
+        "p_hpf_freq": 0.0,
+        "p_hpf_ramp": 0.0,
+        "sound_vol": 0.25,
+        "sample_rate": 44100,
+        "sample_size": 8
+    }"#;
+
+    let playback = Playback::new().unwrap();
+    let params = SynthParams::from_json(json_params).unwrap();
+
+    assert!(playback.play(params).is_ok());
+}
+
+#[test]
+fn test_play_and_wait() {
+    let playback = Playback::new().unwrap();
+
+    let note_sequence = vec![
+        (392.00, "G4"),
+        (369.99, "F#4"),
+        (311.13, "D#4"),
+        (220.00, "A3"),
+        (207.65, "G#3"),
+        (329.63, "E4"),
+        (415.30, "G#4"),
+        (523.25, "C5"),
+    ];
+
+    // Test initial state
+    assert!(matches!(
+        playback.get_state().unwrap(),
+        PlaybackState::Stopped
+    ));
+
+    let start_time = std::time::Instant::now();
+
+    // Play each note and wait for completion
+    for (freq, note_name) in note_sequence {
+        let params = SynthParams {
+            freq_base: freq,
+            env_attack: 0.01,
+            env_sustain: 0.1,
+            env_decay: 0.1,
+            volume: 0.5,
+            ..Default::default()
+        };
+
+        println!("Playing {}", note_name);
+
+        // Play and wait for completion
+        assert!(playback.play_and_wait(params).is_ok());
+
+        // Verify state is Stopped after completion
+        assert!(matches!(
+            playback.get_state().unwrap(),
+            PlaybackState::Stopped
+        ));
+        assert!(playback.is_empty().unwrap());
+    }
+
+    let duration = start_time.elapsed();
+
+    // Ensure total duration is reasonable (at least 400ms for 4 notes)
+    assert!(
+        duration >= std::time::Duration::from_millis(400),
+        "Sequence played too quickly: {:?}",
+        duration
+    );
+
+    println!("Sequence completed in {:?}", duration);
 }

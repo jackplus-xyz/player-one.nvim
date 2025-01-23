@@ -84,7 +84,6 @@ impl Playback {
         let volume = self.get_volume()?;
         params.volume *= volume;
 
-        // Create SynthSource directly instead of using Synthesizer
         use crate::synthesizer::SynthSource;
         let source = SynthSource::new(params);
         sink.append(source);
@@ -96,6 +95,11 @@ impl Playback {
         *state = PlaybackState::Playing;
 
         Ok(())
+    }
+
+    pub fn play_and_wait(&self, params: SynthParams) -> Result<(), PlaybackError> {
+        self.play(params)?;
+        self.wait_until_end()
     }
 
     pub fn stop(&self) -> Result<(), PlaybackError> {
