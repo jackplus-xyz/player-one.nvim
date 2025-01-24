@@ -1,3 +1,4 @@
+use mlua::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::fmt::{self, Display};
 
@@ -38,6 +39,112 @@ pub struct SynthParams {
     pub lpf_resonance: f32, // percentage (0-1)
     pub hpf_freq: f32,      // Hz
     pub hpf_ramp: f32,      // Hz/second
+}
+
+impl FromLua for SynthParams {
+    fn from_lua(lua_value: LuaValue, _: &Lua) -> LuaResult<Self> {
+        match lua_value {
+            LuaValue::String(s) => SynthParams::from_json(&s.to_str()?)
+                .map_err(|e| mlua::Error::external(e.to_string())),
+            LuaValue::Table(table) => {
+                let mut params = SynthParams::default();
+
+                // Helper function to get value with type conversion
+                fn get_value<T: FromLua>(table: &LuaTable, key: &str) -> LuaResult<Option<T>> {
+                    if table.contains_key(key)? {
+                        table.get(key).map(Some)
+                    } else {
+                        Ok(None)
+                    }
+                }
+
+                // Type-safe value assignments with proper conversion
+                if let Some(v) = get_value(&table, "wave_type")? {
+                    params.wave_type = v;
+                }
+                if let Some(v) = get_value(&table, "sample_rate")? {
+                    params.sample_rate = v;
+                }
+                if let Some(v) = get_value(&table, "sample_size")? {
+                    params.sample_size = v;
+                }
+                if let Some(v) = get_value::<f32>(&table, "volume")? {
+                    params.volume = v;
+                }
+                if let Some(v) = get_value::<f32>(&table, "repeat_speed")? {
+                    params.repeat_speed = v;
+                }
+                if let Some(v) = get_value::<f32>(&table, "env_attack")? {
+                    params.env_attack = v;
+                }
+                if let Some(v) = get_value::<f32>(&table, "env_sustain")? {
+                    params.env_sustain = v;
+                }
+                if let Some(v) = get_value::<f32>(&table, "env_punch")? {
+                    params.env_punch = v;
+                }
+                if let Some(v) = get_value::<f32>(&table, "env_decay")? {
+                    params.env_decay = v;
+                }
+                if let Some(v) = get_value::<f32>(&table, "freq_base")? {
+                    params.freq_base = v;
+                }
+                if let Some(v) = get_value::<f32>(&table, "freq_limit")? {
+                    params.freq_limit = v;
+                }
+                if let Some(v) = get_value::<f32>(&table, "freq_ramp")? {
+                    params.freq_ramp = v;
+                }
+                if let Some(v) = get_value::<f32>(&table, "freq_dramp")? {
+                    params.freq_dramp = v;
+                }
+                if let Some(v) = get_value::<f32>(&table, "vib_strength")? {
+                    params.vib_strength = v;
+                }
+                if let Some(v) = get_value::<f32>(&table, "vib_speed")? {
+                    params.vib_speed = v;
+                }
+                if let Some(v) = get_value::<f32>(&table, "arp_mod")? {
+                    params.arp_mod = v;
+                }
+                if let Some(v) = get_value::<f32>(&table, "arp_speed")? {
+                    params.arp_speed = v;
+                }
+                if let Some(v) = get_value::<f32>(&table, "duty")? {
+                    params.duty = v;
+                }
+                if let Some(v) = get_value::<f32>(&table, "duty_ramp")? {
+                    params.duty_ramp = v;
+                }
+                if let Some(v) = get_value::<f32>(&table, "pha_offset")? {
+                    params.pha_offset = v;
+                }
+                if let Some(v) = get_value::<f32>(&table, "pha_ramp")? {
+                    params.pha_ramp = v;
+                }
+                if let Some(v) = get_value::<f32>(&table, "lpf_freq")? {
+                    params.lpf_freq = v;
+                }
+                if let Some(v) = get_value::<f32>(&table, "lpf_ramp")? {
+                    params.lpf_ramp = v;
+                }
+                if let Some(v) = get_value::<f32>(&table, "lpf_resonance")? {
+                    params.lpf_resonance = v;
+                }
+                if let Some(v) = get_value::<f32>(&table, "hpf_freq")? {
+                    params.hpf_freq = v;
+                }
+                if let Some(v) = get_value::<f32>(&table, "hpf_ramp")? {
+                    params.hpf_ramp = v;
+                }
+
+                Ok(params)
+            }
+            _ => Err(mlua::Error::runtime(
+                "Expected string or table for SynthParams",
+            )),
+        }
+    }
 }
 
 // Raw JSON format from legacy/external sources
@@ -91,7 +198,7 @@ impl SynthParams {
         Self::from_json_params(raw)
     }
 
-    pub fn from_json_params(raw: JsonParams) -> Result<Self, ParamsError> {
+    fn from_json_params(raw: JsonParams) -> Result<Self, ParamsError> {
         // Convert normalized values to real units
         Ok(Self {
             wave_type: raw.wave_type,

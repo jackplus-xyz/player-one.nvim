@@ -97,7 +97,7 @@ impl Playback {
         Ok(())
     }
 
-    pub fn play_and_wait(&self, params: SynthParams) -> Result<(), PlaybackError> {
+    pub fn play_async(&self, params: SynthParams) -> Result<(), PlaybackError> {
         self.play(params)?;
         self.wait_until_end()
     }

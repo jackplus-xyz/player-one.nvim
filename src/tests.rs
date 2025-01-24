@@ -517,7 +517,7 @@ fn test_specific_sound_parameters() {
 }
 
 #[test]
-fn test_play_and_wait() {
+fn test_play_async() {
     let playback = Playback::new().unwrap();
 
     let note_sequence = vec![
@@ -544,7 +544,7 @@ fn test_play_and_wait() {
         let params = SynthParams {
             freq_base: freq,
             env_attack: 0.01,
-            env_sustain: 0.1,
+            env_sustain: 0.05,
             env_decay: 0.1,
             volume: 0.5,
             ..Default::default()
@@ -553,7 +553,7 @@ fn test_play_and_wait() {
         println!("Playing {}", note_name);
 
         // Play and wait for completion
-        assert!(playback.play_and_wait(params).is_ok());
+        assert!(playback.play_async(params).is_ok());
 
         // Verify state is Stopped after completion
         assert!(matches!(
