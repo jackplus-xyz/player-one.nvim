@@ -51,6 +51,7 @@ impl Playback {
     }
 
     fn validate(params: &SynthParams) -> Result<(), PlaybackError> {
+        // TODO: improve validation to ensure it doesn't break hardware or memory
         if !(MIN_FREQUENCY..=MAX_FREQUENCY).contains(&params.freq_base) {
             return Err(PlaybackError::InvalidParameter(format!(
                 "Base frequency must be between {} and {} Hz",

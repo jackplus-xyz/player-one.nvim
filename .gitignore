@@ -101,3 +101,7 @@ Temporary Items
 
 # iCloud generated files
 *.icloud
+.aider*
+
+# Others
+notes/

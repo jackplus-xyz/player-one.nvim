@@ -43,13 +43,13 @@ fn test_synth_params_default() {
     assert_eq!(params.sample_size, 8);
 
     // Test default volume
-    assert_eq!(params.volume, 0.25);
+    assert_eq!(params.volume, 0.5);
 
     // Test default envelope
     assert_eq!(params.env_attack, 0.0);
-    assert_eq!(params.env_sustain, 0.03);
-    assert_eq!(params.env_punch, 0.42);
-    assert_eq!(params.env_decay, 0.35);
+    assert_eq!(params.env_sustain, 0.3);
+    assert_eq!(params.env_punch, 0.0);
+    assert_eq!(params.env_decay, 0.4);
 }
 
 #[test]
@@ -351,37 +351,40 @@ fn test_filter_effects() {
 
 #[test]
 fn test_json_parameters() {
+    let playback = Playback::new().unwrap();
     let json_params = r#"{
-        "wave_type": 0,
-        "p_env_attack": 0.0,
-        "p_env_sustain": 0.3,
-        "p_env_punch": 0.0,
-        "p_env_decay": 0.4,
-        "p_base_freq": 0.3,
-        "p_freq_limit": 0.0,
-        "p_freq_ramp": 0.0,
-        "p_freq_dramp": 0.0,
-        "p_vib_strength": 0.0,
-        "p_vib_speed": 0.0,
-        "p_arp_mod": 0.0,
-        "p_arp_speed": 0.0,
-        "p_duty": 0.0,
-        "p_duty_ramp": 0.0,
-        "p_repeat_speed": 0.0,
-        "p_pha_offset": 0.0,
-        "p_pha_ramp": 0.0,
-        "p_lpf_freq": 1.0,
-        "p_lpf_ramp": 0.0,
-        "p_lpf_resonance": 0.0,
-        "p_hpf_freq": 0.0,
-        "p_hpf_ramp": 0.0,
+        "oldParams": true,
+        "wave_type": 1,
+        "p_env_attack": 0,
+        "p_env_sustain": 0.04411743910371005,
+        "p_env_punch": 0.4350212384906197,
+        "p_env_decay": 0.4211059470727624,
+        "p_base_freq": 0.7196594711465818,
+        "p_freq_limit": 0,
+        "p_freq_ramp": 0,
+        "p_freq_dramp": 0,
+        "p_vib_strength": 0,
+        "p_vib_speed": 0,
+        "p_arp_mod": 0.378708522940697,
+        "p_arp_speed": 0.6285888669803376,
+        "p_duty": 0,
+        "p_duty_ramp": 0,
+        "p_repeat_speed": 0,
+        "p_pha_offset": 0,
+        "p_pha_ramp": 0,
+        "p_lpf_freq": 1,
+        "p_lpf_ramp": 0,
+        "p_lpf_resonance": 0,
+        "p_hpf_freq": 0,
+        "p_hpf_ramp": 0,
         "sound_vol": 0.25,
         "sample_rate": 44100,
         "sample_size": 8
     }"#;
 
-    let params = SynthParams::from_json(json_params);
-    assert!(params.is_ok());
+    let params =
+        SynthParams::from_json(json_params).expect("Failed to parse synth parameters from JSON");
+    assert!(playback.play(params).is_ok());
 
     // Test invalid JSON
     let invalid_json = r#"{"wave_type": "invalid"}"#;
@@ -543,10 +546,10 @@ fn test_play_async() {
     for (freq, note_name) in note_sequence {
         let params = SynthParams {
             freq_base: freq,
-            env_attack: 0.01,
-            env_sustain: 0.05,
-            env_decay: 0.1,
-            volume: 0.5,
+            // env_attack: 0.01,
+            // env_sustain: 0.05,
+            // env_decay: 0.1,
+            // volume: 0.5,
             ..Default::default()
         };
 
@@ -573,4 +576,54 @@ fn test_play_async() {
     );
 
     println!("Sequence completed in {:?}", duration);
+}
+
+#[test]
+fn test_jsfxr_param_conversion() {
+    let json = r#"{
+        "wave_type": 1,
+        "p_env_attack": 0.0,
+        "p_env_sustain": 0.024555768060600138,
+        "p_env_punch": 0.4571553721133509,
+        "p_env_decay": 0.3423639066276736,
+        "p_base_freq": 0.5500696633190347,
+        "p_freq_limit": 0.0,
+        "p_freq_ramp": 0.0,
+        "p_freq_dramp": 0.0,
+        "p_vib_strength": 0.0,
+        "p_vib_speed": 0.0,
+        "p_arp_mod": 0.5329522492796008,
+        "p_arp_speed": 0.689393158112304,
+        "p_duty": 0.0,
+        "p_duty_ramp": 0.0,
+        "p_repeat_speed": 0.0,
+        "p_pha_offset": 0.0,
+        "p_pha_ramp": 0.0,
+        "p_lpf_freq": 1.0,
+        "p_lpf_ramp": 0.0,
+        "p_lpf_resonance": 0.0,
+        "p_hpf_freq": 0.0,
+        "p_hpf_ramp": 0.0,
+        "sound_vol": 0.25,
+        "sample_rate": 44100,
+        "sample_size": 8
+    }"#;
+
+    let params = SynthParams::from_json(json).unwrap();
+
+    // Expected values from jsfxr
+    assert_eq!(params.wave_type, 1);
+    assert!((params.env_attack - 0.0).abs() < 0.001);
+    assert!((params.env_sustain - 0.001367).abs() < 0.001);
+    assert!((params.env_punch - 45.715).abs() < 0.01);
+    assert!((params.env_decay - 0.2658).abs() < 0.001);
+    assert!((params.freq_base - 1071.0).abs() < 0.1);
+    assert!((params.freq_limit - 3.528).abs() < 0.001);
+    assert!((params.arp_mod - 1.343).abs() < 0.001);
+    assert!((params.arp_speed - 0.04447).abs() < 0.001);
+
+    // println!("Volume:{}", params.volume);
+
+    let playback = Playback::new().unwrap();
+    assert!(playback.play(params).is_ok());
 }
