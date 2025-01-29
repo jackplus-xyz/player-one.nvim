@@ -1,9 +1,9 @@
 mod lua;
-mod playback;
-mod synthesizer;
+mod player;
+mod sound;
 
-pub use playback::{error::PlaybackError, Playback};
-pub use synthesizer::SynthParams;
+pub use player::{PlayError, Player};
+pub use sound::SoundParams;
 
 #[mlua::lua_module]
 fn libplayerone(lua: &mlua::Lua) -> mlua::Result<mlua::Table> {
