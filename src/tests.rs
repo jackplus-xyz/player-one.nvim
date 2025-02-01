@@ -229,13 +229,6 @@ fn test_json_params() {
   "sample_size": 8
 }"#;
 
-    // let sample = SoundParams::from_json(json_params).expect("Should parse JSON successfully");
-    // let sound_params = SoundParams::new(sample);
-    // assert!(
-    //     player.play(sound_params).is_ok(),
-    //     "Should play sound successfully"
-    // );
-
     let sample = SoundParams::from_json(json_params).expect("Should parse JSON successfully");
 
     // Verify the parsed values match the input JSON

@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use sfxr::{Generator, Sample, WaveType};
 use std::sync::Arc;
 
+// Used to parse json values from [jsfxr](https://sfxr.me/)
 #[derive(Serialize, Deserialize)]
 struct JsonParams {
     wave_type: u8,
@@ -74,6 +75,122 @@ impl SoundParams {
         Generator::new(*self.sample.as_ref())
     }
 
+    pub fn from_table(table: LuaTable) -> LuaResult<Sample> {
+        let mut sample = Sample::new();
+
+        if let Ok(wave_type) = table.get("wave_type") {
+            sample.wave_type = match wave_type {
+                0 => WaveType::Square,
+                1 => WaveType::Sawtooth,
+                2 => WaveType::Sine,
+                3 => WaveType::Noise,
+                4 => WaveType::Triangle,
+                _ => WaveType::Square,
+            };
+        }
+        if let Ok(v) = table.get::<f64>("base_freq") {
+            sample.base_freq = (v * 100.0 / (8.0 * 44100.0) - 0.001).sqrt();
+        }
+        if let Ok(v) = table.get::<f64>("freq_limit") {
+            sample.freq_limit = (v * 100.0 / (8.0 * 44100.0) - 0.001).sqrt();
+        }
+        if let Ok(v) = table.get::<f64>("freq_ramp") {
+            sample.freq_ramp = (-v * 0.01).cbrt();
+        }
+        if let Ok(v) = table.get::<f64>("freq_dramp") {
+            sample.freq_dramp = (v / -0.000001).cbrt();
+        }
+
+        if let Ok(v) = table.get::<f32>("duty") {
+            sample.duty = (v / 100.0 - 0.5) / -0.5;
+        }
+        if let Ok(v) = table.get::<f32>("duty_ramp") {
+            sample.duty_ramp = v / (-0.00005 * 8.0 * 44100.0);
+        }
+
+        if let Ok(v) = table.get::<f64>("vib_speed") {
+            sample.vib_speed = (v * 64.0 / 441000.0).sqrt();
+        }
+        if let Ok(v) = table.get::<f64>("vib_strength") {
+            sample.vib_strength = v / 0.5;
+        }
+
+        if let Ok(v) = table.get::<f32>("env_attack") {
+            sample.env_attack = (v * 44100.0).sqrt();
+        }
+        if let Ok(v) = table.get::<f32>("env_sustain") {
+            sample.env_sustain = (v * 44100.0 / 100000.0).sqrt();
+        }
+
+        if let Ok(v) = table.get::<f32>("env_punch") {
+            sample.env_punch = (v / 100.0 * 44100.0 / 100000.0).sqrt();
+        }
+        if let Ok(v) = table.get::<f32>("env_decay") {
+            sample.env_decay = (v * 44100.0 / 100000.0).sqrt();
+        }
+
+        if let Ok(v) = table.get::<f32>("lpf_freq") {
+            sample.lpf_freq = (v / (8.0 * 44100.0 * (1.0 - v / (8.0 * 44100.0))) / 0.1).cbrt();
+        }
+        if let Ok(v) = table.get::<f32>("lpf_ramp") {
+            if v != 0.0 {
+                sample.lpf_ramp = (v.powf(1.0 / 44100.0) - 1.0) / 0.0003;
+            }
+        }
+        if let Ok(v) = table.get::<f32>("lpf_resonance") {
+            sample.lpf_resonance = ((1.0 / ((100.0 - v) / 500.0) - 1.0) / 20.0).sqrt();
+        }
+
+        if let Ok(v) = table.get::<f32>("hpf_freq") {
+            sample.hpf_freq = (v / (8.0 * 44100.0 * (1.0 - v / (8.0 * 44100.0))) / 0.1).sqrt();
+        }
+        if let Ok(v) = table.get::<f32>("hpf_ramp") {
+            if v != 0.0 {
+                sample.hpf_ramp = (v.powf(1.0 / 44100.0) - 1.0) / 0.0003;
+            }
+        }
+        if let Ok(mut v) = table.raw_get::<f32>("pha_offset") {
+            if v < 0.0 {
+                v = -1.0
+            } else {
+                v = 1.0
+            }
+            sample.pha_offset = ((v * 44.1).abs() / 1020.0).sqrt();
+        }
+        if let Ok(v) = table.raw_get::<f32>("pha_ramp") {
+            sample.pha_ramp = (if v < 0.0 { -1.0 } else { 1.0 }) * (v.abs() / 1000.0).sqrt();
+        }
+        if let Ok(v) = table.raw_get::<f32>("repeat_speed") {
+            if v != 0.0 {
+                sample.repeat_speed = -(((44100.0 / v - 32.0) / 20000.0).sqrt() - 1.0)
+            };
+        }
+
+        if let Ok(v) = table.raw_get::<f32>("arp_speed") {
+            sample.arp_speed = if v == 0.0 {
+                1.
+            } else {
+                1.0 - ((v * 44100.0 - 32.0) / 20000.0).sqrt()
+            };
+        }
+        if let Ok(mut v) = table.raw_get::<f64>("arp_mod") {
+            if v != 0.0 {
+                v = 1.0 / v
+            }
+            sample.arp_mod = if v < 1.0 {
+                ((1.0 - v) / 0.9).sqrt()
+            } else {
+                -((v - 1.0) / 10.0).sqrt()
+            };
+        }
+        // TODO: add volume config?
+        // if let Ok(v) = table.raw_get::<f64>("sound_vol") {
+        //     sample.volume = (10f64.powf(v / 10.0)).sqrt().ln() + 1.0;
+        // }
+
+        Ok(sample)
+    }
+
     pub fn from_json(json_str: &str) -> LuaResult<Sample> {
         let json: JsonParams = serde_json::from_str(json_str)
             .map_err(|e| mlua::Error::RuntimeError(format!("Invalid JSON: {}", e)))?;
@@ -119,34 +236,7 @@ impl FromLua for SoundParams {
     fn from_lua(value: LuaValue, _: &Lua) -> LuaResult<Self> {
         match value {
             LuaValue::Table(table) => {
-                let mut sample = Sample::new();
-
-                fn get_val_from_table<T: FromLua>(
-                    table: &LuaTable,
-                    key: &str,
-                ) -> LuaResult<Option<T>> {
-                    if table.contains_key(key)? {
-                        table.get(key).map(Some)
-                    } else {
-                        Ok(None)
-                    }
-                }
-
-                if let Ok(Some(env_attack)) = get_val_from_table::<f32>(&table, "env_attack") {
-                    sample.env_attack = (env_attack / 100000.0).sqrt();
-                }
-
-                if let Ok(wave_type) = table.get("wave_type") {
-                    sample.wave_type = match wave_type {
-                        0 => WaveType::Square,
-                        1 => WaveType::Sawtooth,
-                        2 => WaveType::Sine,
-                        3 => WaveType::Noise,
-                        4 => WaveType::Triangle,
-                        _ => WaveType::Square,
-                    };
-                }
-
+                let sample = Self::from_table(table)?;
                 Ok(SoundParams::new(sample))
             }
             LuaValue::String(s) => {
