@@ -23,8 +23,6 @@ describe("utils", function()
 					Utils.play_async(note)
 				end)
 				assert.is_true(ok, string.format("Failed to play note %d: %s", i, tostring(err)))
-
-				-- os.execute("sleep " .. pause)
 			end
 
 			local duration = os.time() - start_time
