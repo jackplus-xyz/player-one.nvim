@@ -3,6 +3,7 @@ local State = require("player-one.state")
 
 local M = {}
 
+-- TODO: Add type annotations for better IDE support
 local defaults = {}
 
 function M.setup(options)
