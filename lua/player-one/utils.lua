@@ -1,21 +1,29 @@
 local Lib = require("player-one.lib")
-local Sounds = require("player-one.sounds")
 
 local M = {}
 
+-- TODO: implement
+local function sanitize_params(params)
+	return params
+end
+
+local function parse_json_params(json_params)
+	local ok, params = pcall(vim.json.decode, json_params)
+	if not ok then
+		error("Failed to parse sound paramsuration: " .. params)
+	end
+	return sanitize_params(params)
+end
+
 function M.play(params)
-	-- TODO: add validation
-	-- if type(sound_config) == "string" then
-	-- 	-- If it's a JSON string, parse it
-	-- 	sound_config = Sounds.parse_json_config(sound_config)
-	-- elseif type(sound_config) == "table" then
-	-- 	-- If it's a table, sanitize it
-	-- 	sound_config = Sounds.sanitize_config(sound_config)
-	-- else
-	-- 	error("Invalid sound configuration type")
-	-- end
-	--
-	-- Play the sound using the Rust library
+	if type(params) == "string" then
+		params = parse_json_params(params)
+	elseif type(params) == "table" then
+		params = sanitize_params(params)
+	else
+		error("Invalid sound configuration type")
+	end
+
 	return Lib.play(params)
 end
 

@@ -36,8 +36,8 @@ function M.play(params)
 	Utils.play(params)
 end
 
-function M.stop(params)
-	Utils.stop(params)
+function M.stop()
+	Utils.stop()
 end
 
 -- TODO: add api to play internal presets & sfxr presets
