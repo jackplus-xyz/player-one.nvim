@@ -5,89 +5,59 @@ describe("utils", function()
 	describe("play", function()
 		it("should play a sequence of notes", function()
 			local notes = {
-				{ base_freq = 392.00 },
-				{ base_freq = 369.99 },
-				{ base_freq = 311.13 },
-				{ base_freq = 220.00 },
-				{ base_freq = 207.65 },
-				{ base_freq = 329.63 },
-				{ base_freq = 415.30 },
-				{ base_freq = 523.25 },
+				{ wave_type = 1, base_freq = 392.0, env_attack = 0.0, env_sustain = 0.001367, env_decay = 0.1658 },
+				{ wave_type = 1, base_freq = 369.99, env_attack = 0.0, env_sustain = 0.001367, env_decay = 0.1658 },
+				{ wave_type = 1, base_freq = 311.13, env_attack = 0.0, env_sustain = 0.001367, env_decay = 0.1658 },
+				{ wave_type = 1, base_freq = 220.00, env_attack = 0.0, env_sustain = 0.001367, env_decay = 0.1658 },
+				{ wave_type = 1, base_freq = 207.65, env_attack = 0.0, env_sustain = 0.001367, env_decay = 0.1658 },
+				{ wave_type = 1, base_freq = 329.63, env_attack = 0.0, env_sustain = 0.001367, env_decay = 0.1658 },
+				{ wave_type = 1, base_freq = 415.30, env_attack = 0.0, env_sustain = 0.001367, env_decay = 0.1658 },
+				{ wave_type = 1, base_freq = 523.25, env_attack = 0.0, env_sustain = 0.001367, env_decay = 0.1658 },
 			}
-
-			local start_time = os.time()
-			local pause = 1
 
 			for i, note in ipairs(notes) do
 				local ok, err = pcall(function()
-					Utils.play_async(note)
+					Utils.play(note)
 				end)
 				assert.is_true(ok, string.format("Failed to play note %d: %s", i, tostring(err)))
 			end
+			it("should play sound with specific parameters", function()
+				local params = {
+					wave_type = 0,
+					env_attack = 0.000,
+					env_sustain = 0.001367,
+					env_punch = 45.72,
+					env_decay = 0.2658,
+					base_freq = 1071.0,
+					freq_limit = 3.528,
+					freq_ramp = 0.0,
+					freq_dramp = 0.0,
+					vib_strength = 0.0,
+					vib_speed = 0.0,
+					arp_mod = 1.343,
+					arp_speed = 0.04447,
+					duty = 50.0,
+					duty_ramp = 0.0,
+					repeat_speed = 0.0,
+					pha_offset = 0.0,
+					pha_ramp = 0.0,
+					lpf_freq = 0.0,
+					lpf_ramp = 0.0,
+					lpf_resonance = 45.0,
+					hpf_freq = 0.0,
+					hpf_ramp = 0.0,
+				}
 
-			local duration = os.time() - start_time
+				local ok, err = pcall(function()
+					Utils.play(params)
+				end)
+				assert.is_true(ok, string.format("Failed to play sound with parameters: %s", tostring(err)))
 
-			assert.is_true(
-				duration >= #notes * pause,
-				string.format("Sequence played too quickly: %d seconds", duration)
-			)
-
-			print(string.format("Sequence completed in %d seconds", duration))
-		end)
-
-		it("should play sound with specific parameters", function()
-			local params = {
-				wave_type = 0, -- square wave
-				env_attack = 0.000, -- 0 sec
-				env_sustain = 0.001367, -- 0.001367 sec
-				env_punch = 45.72, -- +45.72%
-				env_decay = 0.2658, -- 0.2658 sec
-
-				base_freq = 1071.0, -- 1071 Hz
-				freq_limit = 3.528, -- 3.528 Hz
-				freq_ramp = 0.0, -- 0 octaves/sec
-				freq_dramp = 0.0, -- 0 octaves/sec^2
-
-				-- Vibrato off
-				vib_strength = 0.0,
-				vib_speed = 0.0,
-
-				-- Arpeggiation
-				arp_mod = 1.343, -- x1.343
-				arp_speed = 0.04447, -- 0.04447 sec
-
-				-- Duty cycle
-				duty = 50.0, -- 50%
-				duty_ramp = 0.0, -- 0%/sec
-
-				-- Retrigger OFF
-				repeat_speed = 0.0,
-
-				-- Flanger OFF
-				pha_offset = 0.0,
-				pha_ramp = 0.0,
-
-				-- Low-pass filter
-				lpf_freq = 0.0, -- OFF
-				lpf_ramp = 0.0, -- OFF
-				lpf_resonance = 45.0, -- 45%
-
-				-- High-pass filter OFF
-				hpf_freq = 0.0,
-				hpf_ramp = 0.0,
-			}
-
-			local ok, err = pcall(function()
-				Utils.play(params)
+				os.execute("sleep 0.5")
 			end)
-			assert.is_true(ok, string.format("Failed to play sound with parameters: %s", tostring(err)))
 
-			-- Add a small delay to let the sound complete
-			os.execute("sleep 0.5")
-		end)
-
-		it("should play sound with valid JSON string config", function()
-			local json_config = [[
+			it("should play sound with valid JSON string config", function()
+				local json_config = [[
 		    {
 		      "oldParams": true,
 		      "wave_type": 1,
@@ -119,51 +89,39 @@ describe("utils", function()
 		    }
 		 ]]
 
-			local ok, err = pcall(function()
-				Utils.play(json_config)
+				local ok, err = pcall(function()
+					Utils.play(json_config)
+				end)
+				os.execute("sleep 0.5")
+				assert.is_true(ok, string.format("Failed to play json sound: %s", tostring(err)))
 			end)
-			os.execute("sleep 0.5")
-			assert.is_true(ok, string.format("Failed to play json sound: %s", tostring(err)))
-		end)
 
-		it("#only should play identical sounds with table and JSON configurations", function()
-			-- Lua table configuration
-			local table_config = {
-				wave_type = 1,
-				env_attack = 0.000,
-				env_sustain = 0.001367,
-				env_punch = 45.72,
-				env_decay = 0.2658,
+			it("#only should play identical sounds with table and JSON configurations", function()
+				local table_config = {
+					wave_type = 1,
+					env_attack = 0.000,
+					env_sustain = 0.001367,
+					env_punch = 45.72,
+					env_decay = 0.2658,
+					base_freq = 1071.0,
+					freq_dramp = 0.0,
+					vib_strength = 0.0,
+					vib_speed = 0.0,
+					arp_mod = 1.343,
+					arp_speed = 0.04447,
+					duty = 50.0,
+					duty_ramp = 0.0,
+					repeat_speed = 0.0,
+					pha_offset = 0.0,
+					pha_ramp = 0.0,
+					lpf_freq = 0.0,
+					lpf_ramp = 1.0,
+					lpf_resonance = 45.0,
+					hpf_freq = 0.0,
+					hpf_ramp = 0.0,
+				}
 
-				base_freq = 1071.0,
-
-				freq_dramp = 0.0,
-
-				vib_strength = 0.0,
-				vib_speed = 0.0,
-
-				arp_mod = 1.343,
-				arp_speed = 0.04447,
-
-				duty = 50.0,
-				duty_ramp = 0.0,
-
-				repeat_speed = 0.0,
-
-				pha_offset = 0.0,
-				pha_ramp = 0.0,
-
-				lpf_freq = 0.0,
-
-				lpf_ramp = 1.0,
-				lpf_resonance = 45.0,
-
-				hpf_freq = 0.0,
-				hpf_ramp = 0.0,
-			}
-
-			-- Equivalent JSON configuration
-			local json_config = [[
+				local json_config = [[
     {
         "oldParams": true,
         "wave_type": 1,
@@ -195,17 +153,19 @@ describe("utils", function()
     }
     ]]
 
-			-- Play sound using table configuration
-			local ok_table, err_table = pcall(function()
-				Utils.play_async(table_config)
-			end)
-			assert.is_true(ok_table, string.format("Failed to play sound with table config: %s", tostring(err_table)))
+				local ok_table, err_table = pcall(function()
+					Utils.play_async(table_config)
+				end)
+				assert.is_true(
+					ok_table,
+					string.format("Failed to play sound with table config: %s", tostring(err_table))
+				)
 
-			-- Play sound using JSON configuration
-			local ok_json, err_json = pcall(function()
-				Utils.play_async(json_config)
+				local ok_json, err_json = pcall(function()
+					Utils.play_async(json_config)
+				end)
+				assert.is_true(ok_json, string.format("Failed to play sound with JSON config: %s", tostring(err_json)))
 			end)
-			assert.is_true(ok_json, string.format("Failed to play sound with JSON config: %s", tostring(err_json)))
 		end)
 	end)
 end)

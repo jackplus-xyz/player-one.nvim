@@ -31,9 +31,14 @@ impl Player {
 
     pub fn play(&self, params: SoundParams) -> Result<(), PlayError> {
         let mut generator = params.generator();
-        let buffer_size = 44100; // 1 second at 44.1kHz
-        let mut buffer = vec![0.0; buffer_size];
 
+        let total_duration = (generator.sample.env_attack.powi(2)
+            + generator.sample.env_sustain.powi(2)
+            + generator.sample.env_decay.powi(2))
+            * 100000.0;
+        let buffer_size = total_duration.ceil() as usize;
+
+        let mut buffer = vec![0.0; buffer_size];
         generator.generate(&mut buffer);
 
         let source = rodio::buffer::SamplesBuffer::new(1, 44100, buffer);
