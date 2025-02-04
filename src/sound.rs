@@ -116,12 +116,11 @@ impl SoundParams {
         }
 
         if let Ok(v) = table.get::<f32>("env_attack") {
-            sample.env_attack = (v * 44100.0).sqrt();
+            sample.env_attack = (v * 44100.0 / 100000.0).sqrt();
         }
         if let Ok(v) = table.get::<f32>("env_sustain") {
             sample.env_sustain = (v * 44100.0 / 100000.0).sqrt();
         }
-
         if let Ok(v) = table.get::<f32>("env_punch") {
             sample.env_punch = (v / 100.0 * 44100.0 / 100000.0).sqrt();
         }
