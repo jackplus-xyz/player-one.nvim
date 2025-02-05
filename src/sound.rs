@@ -5,6 +5,7 @@ use std::sync::Arc;
 
 // Used to parse json values from [jsfxr](https://sfxr.me/)
 #[derive(Serialize, Deserialize)]
+#[serde(default)]
 struct JsonParams {
     wave_type: u8,
     p_env_attack: f32,
@@ -29,6 +30,36 @@ struct JsonParams {
     p_lpf_resonance: f32,
     p_hpf_freq: f32,
     p_hpf_ramp: f32,
+}
+
+impl Default for JsonParams {
+    fn default() -> Self {
+        Self {
+            wave_type: 0,
+            p_env_attack: 0.4,
+            p_env_sustain: 0.1,
+            p_env_decay: 0.5,
+            p_env_punch: 0.0,
+            p_base_freq: 0.3,
+            p_freq_limit: 0.0,
+            p_freq_ramp: 0.0,
+            p_freq_dramp: 0.0,
+            p_vib_strength: 0.0,
+            p_vib_speed: 0.0,
+            p_arp_speed: 0.0,
+            p_arp_mod: 0.0,
+            p_duty: 0.0,
+            p_duty_ramp: 0.0,
+            p_repeat_speed: 0.0,
+            p_pha_offset: 0.0,
+            p_pha_ramp: 0.0,
+            p_lpf_freq: 1.0,
+            p_lpf_ramp: 0.0,
+            p_lpf_resonance: 0.0,
+            p_hpf_freq: 0.0,
+            p_hpf_ramp: 0.0,
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -191,8 +222,10 @@ impl SoundParams {
     }
 
     pub fn from_json(json_str: &str) -> LuaResult<Sample> {
-        let json: JsonParams = serde_json::from_str(json_str)
-            .map_err(|e| mlua::Error::RuntimeError(format!("Invalid JSON: {}", e)))?;
+        let json: JsonParams = serde_json::from_str(json_str).unwrap_or_else(|err| {
+            eprintln!("Invalid JSON, using defaults. Error: {}", err);
+            JsonParams::default()
+        });
 
         let mut sample = Sample::new();
 
