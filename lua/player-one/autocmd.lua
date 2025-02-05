@@ -11,7 +11,7 @@ local function create_autocmds()
 		group = group,
 		callback = function()
 			if State.is_enabled then
-				Utils.play(SoundPreset.welcome)
+				Utils.play(SoundPreset.vim_enter)
 			end
 		end,
 	})
@@ -20,7 +20,7 @@ local function create_autocmds()
 		group = group,
 		callback = function()
 			if State.is_enabled then
-				Utils.play(SoundPreset.type)
+				Utils.play(SoundPreset.text_changed_i)
 			end
 		end,
 	})
@@ -33,7 +33,7 @@ local function create_autocmds()
 					group = group,
 					callback = function()
 						if State.is_enabled then
-							Utils.play(SoundPreset.move)
+							Utils.play(SoundPreset.cursor_moved)
 						end
 					end,
 				})
@@ -45,7 +45,7 @@ local function create_autocmds()
 		group = group,
 		callback = function()
 			if State.is_enabled then
-				Utils.play(SoundPreset.save)
+				Utils.play(SoundPreset.buf_write_post)
 			end
 		end,
 	})
@@ -54,7 +54,7 @@ local function create_autocmds()
 		group = group,
 		callback = function()
 			if State.is_enabled then
-				Utils.play(SoundPreset.yank)
+				Utils.play(SoundPreset.text_yank_post)
 			end
 		end,
 	})
@@ -63,7 +63,7 @@ local function create_autocmds()
 		group = group,
 		callback = function()
 			if State.is_enabled then
-				Utils.play(SoundPreset.cmdline)
+				Utils.play(SoundPreset.cmdline_enter)
 			end
 		end,
 	})
@@ -75,7 +75,7 @@ local function create_autocmds()
 		group = group,
 		callback = function()
 			if State.is_enabled then
-				Utils.play(SoundPreset.exit)
+				Utils.play(SoundPreset.vim_leave_pre)
 				os.execute("sleep 0.2") -- Play the sound before exiting
 			end
 		end,
