@@ -129,12 +129,17 @@ local function process_sound_params(params, callback)
 	if type(params) == "table" then
 		-- Handle a sequence of sound
 		if params[1] and type(params[1]) == "table" then
-			local results = {}
-			for i, sound_params in ipairs(params) do
-				local sanitized = sanitize_params(sound_params)
-				results[i] = callback(sanitized)
+			if #params > 1 then
+				local results = {}
+				for i, sound_params in ipairs(params) do
+					local sanitized = sanitize_params(sound_params)
+					results[i] = callback(sanitized)
+				end
+				return results
+			else
+				local sanitized = sanitize_params(params[1])
+				return callback(sanitized)
 			end
-			return results
 		else
 			local sanitized = sanitize_params(params)
 			return callback(sanitized)

@@ -8,7 +8,9 @@ local M = {}
 function M.enable()
 	State.is_enabled = true
 	-- TODO: handle preset loading
-	Autocmd.setup("tone")
+	if State.preset and State.preset ~= "" and State.preset ~= "none" then
+		Autocmd.setup(State.preset)
+	end
 end
 
 -- TODO: add proper cleanup

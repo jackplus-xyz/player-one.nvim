@@ -20,22 +20,17 @@ local function create_autocmds()
 		group = group,
 		callback = function()
 			if State.is_enabled then
-				local variation = math.random(-20, 20)
-				local type = vim.deepcopy(SoundPreset.type)
-				type.base_freq = type.base_freq + variation
-				Utils.play(type)
+				Utils.play(SoundPreset.type)
 			end
 		end,
 	})
 
+	-- FIXME: don't trigger when VimEnter
 	vim.api.nvim_create_autocmd({ "CursorMoved" }, {
 		group = group,
 		callback = function()
 			if State.is_enabled then
-				local variation = math.random(-10, 10)
-				local move = vim.deepcopy(SoundPreset.move)
-				move.base_freq = move.base_freq + variation
-				Utils.play(move)
+				Utils.play(SoundPreset.move)
 			end
 		end,
 	})
