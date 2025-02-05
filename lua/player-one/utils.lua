@@ -113,30 +113,43 @@ local function sanitize_json_params(json_params)
 		params.wave_type = math.floor(params.wave_type)
 	end
 
-	return params
+	return vim.json.encode(params)
+end
+
+local function process_sound_params(params, callback)
+	if type(callback) ~= "function" then
+		error("Callback must be a function")
+	end
+
+	if type(params) == "string" then
+		local sanitized = sanitize_json_params(params)
+		return callback(sanitized)
+	end
+
+	if type(params) == "table" then
+		-- Handle a sequence of sound
+		if params[1] and type(params[1]) == "table" then
+			local results = {}
+			for i, sound_params in ipairs(params) do
+				local sanitized = sanitize_params(sound_params)
+				results[i] = callback(sanitized)
+			end
+			return results
+		else
+			local sanitized = sanitize_params(params)
+			return callback(sanitized)
+		end
+	end
+
+	error(string.format("Invalid sound params type: %s", type(params)))
 end
 
 function M.play(params)
-	if type(params) == "string" then
-		params = sanitize_json_params(params)
-	elseif type(params) == "table" then
-		params = sanitize_params(params)
-	else
-		error("Invalid sound configuration type")
-	end
-
-	return Lib.play(params)
+	return process_sound_params(params, Lib.play)
 end
 
 function M.play_async(params)
-	if type(params) == "string" then
-		params = sanitize_json_params(params)
-	elseif type(params) == "table" then
-		params = sanitize_params(params)
-	else
-		error("Invalid sound configuration type")
-	end
-	return Lib.play_async(params)
+	return process_sound_params(params, Lib.play_async)
 end
 
 function M.stop()
