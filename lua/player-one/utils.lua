@@ -2,19 +2,64 @@ local Lib = require("player-one.lib")
 
 local M = {}
 
--- TODO: implement
+local function clamp(value, min, max)
+	return math.min(math.max(value, min), max)
+end
+
 local function sanitize_params(params)
-	return params
+	if not params then
+		return {}
+	end
+
+	local allowed_keys = {
+		"wave_type",
+		"base_freq",
+		"freq_limit",
+		"freq_ramp",
+		"freq_dramp",
+		"duty",
+		"duty_ramp",
+		"vib_speed",
+		"vib_strength",
+		"env_attack",
+		"env_sustain",
+		"env_punch",
+		"env_decay",
+		"lpf_freq",
+		"lpf_ramp",
+		"lpf_resonance",
+		"hpf_freq",
+		"hpf_ramp",
+		"pha_offset",
+		"pha_ramp",
+		"repeat_speed",
+		"arp_speed",
+		"arp_mod",
+		"sample_rate",
+		"sample_size",
+	}
+
+	local sanitized = {}
+
+	for _, key in ipairs(allowed_keys) do
+		if params[key] then
+			local value = params[key]
+			-- Value that should be passed as an integer
+			if type(value) == "number" and (key == "wave_type" or key == "sample_rate" or key == "sample_size") then
+				sanitized[key] = math.floor(value)
+			else
+				sanitized[key] = value
+			end
+		end
+	end
+
+	return sanitized
 end
 
 local function sanitize_json_params(json_params)
 	local ok, params = pcall(vim.json.decode, json_params)
 	if not ok then
 		error("Failed to parse sound configuration: " .. params)
-	end
-
-	local function clamp(value, min, max)
-		return math.min(math.max(value, min), max)
 	end
 
 	local unsigned_params = {
@@ -84,11 +129,14 @@ function M.play(params)
 end
 
 function M.play_async(params)
+	if type(params) == "string" then
+		params = sanitize_json_params(params)
+	elseif type(params) == "table" then
+		params = sanitize_params(params)
+	else
+		error("Invalid sound configuration type")
+	end
 	return Lib.play_async(params)
-end
-
-function M.start()
-	-- Initialize any required resources
 end
 
 function M.stop()
