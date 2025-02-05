@@ -25,13 +25,19 @@ local function create_autocmds()
 		end,
 	})
 
-	-- FIXME: don't trigger when VimEnter
-	vim.api.nvim_create_autocmd({ "CursorMoved" }, {
+	vim.api.nvim_create_autocmd("VimEnter", {
 		group = group,
 		callback = function()
-			if State.is_enabled then
-				Utils.play(SoundPreset.move)
-			end
+			vim.defer_fn(function()
+				vim.api.nvim_create_autocmd({ "CursorMoved" }, {
+					group = group,
+					callback = function()
+						if State.is_enabled then
+							Utils.play(SoundPreset.move)
+						end
+					end,
+				})
+			end, 1000) -- add 1 second delay so it won't trigger on VimEnter
 		end,
 	})
 
