@@ -1,6 +1,4 @@
-local M = {}
-
-M.ui = {
+local M = {
 	-- A sequece of welcome jingle
 	welcome = {
 		{ wave_type = 1, base_freq = 392.00, env_attack = 0.0, env_sustain = 0.001367, env_decay = 0.1658 },
@@ -12,8 +10,17 @@ M.ui = {
 		{ wave_type = 1, base_freq = 415.30, env_attack = 0.0, env_sustain = 0.001367, env_decay = 0.1658 },
 		{ wave_type = 1, base_freq = 523.25, env_attack = 0.0, env_sustain = 0.001367, env_decay = 0.1658 },
 	},
-	-- A coin pickup sound
 	save = {
+		wave_type = 2,
+		base_freq = 636.7,
+		env_attack = 0.0,
+		env_sustain = 0.01745,
+		env_punch = 38.45,
+		env_decay = 0.5615,
+		arp_mod = 1.048,
+		arp_speed = 0.04519,
+	},
+	yank = {
 		wave_type = 1,
 		env_attack = 0.000,
 		env_sustain = 0.001367,
@@ -36,7 +43,6 @@ M.ui = {
 		hpf_freq = 0.0,
 		hpf_ramp = 0.0,
 	},
-	-- A short beep sound
 	type = {
 		wave_type = 1,
 		env_sustain = 0.01,
@@ -44,6 +50,26 @@ M.ui = {
 		env_decay = 0.02,
 		base_freq = 760.0,
 		freq_ramp = -1.0,
+	},
+	move = {
+		wave_type = 1,
+		env_sustain = 0.01,
+		env_attack = 0.0,
+		env_decay = 0.01,
+		base_freq = 440.0,
+		freq_ramp = -1.0,
+	},
+	cmdline = {
+		{ wave_type = 1, base_freq = 392.00, env_attack = 0.0, env_sustain = 0.001367, env_decay = 0.0658 },
+		{ wave_type = 1, base_freq = 523.25, env_attack = 0.0, env_sustain = 0.001367, env_decay = 0.0658 },
+	},
+	exit = {
+		wave_type = 1,
+		base_freq = 2197,
+		env_attack = 0.0,
+		env_sustain = 0.009458,
+		env_punch = 38.64,
+		env_decay = 0.1367,
 	},
 }
 

@@ -1,22 +1,21 @@
-local Utils = require("player-one.utils")
+local Autocmd = require("player-one.autocmd")
 local State = require("player-one.state")
+local Utils = require("player-one.utils")
 
 local M = {}
 
 -- TODO: add error handling for public APIs
--- Add error types and messages
--- Implement error recovery strategies
--- Add friendly error messages for users
 function M.enable()
 	State.is_enabled = true
-	Utils.start()
+	-- TODO: handle preset loading
+	Autocmd.setup("tone")
 end
 
 -- TODO: add proper cleanup
--- Stop all playing sounds
--- Clear sound queue
--- Remove event listeners
--- Free resources
+-- - Stop all playing sounds
+-- - Clear sound queue
+-- - Remove event listeners
+-- - Free resources
 function M.disable()
 	State.is_enabled = false
 	Utils.stop()
@@ -31,7 +30,6 @@ function M.toggle()
 	vim.notify(string.format("**PlayerOne** %s", State.is_enabled and "enabled" or "disabled"))
 end
 
--- TODO: expose api for playing sounds
 function M.play(params)
 	Utils.play(params)
 end

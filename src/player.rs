@@ -29,7 +29,7 @@ impl Player {
         })
     }
 
-    // TODO: make this function synchronous
+    // TODO: make this synchronous?
     pub fn play(&self, params: SoundParams) -> Result<(), PlayError> {
         let mut generator = params.generator();
 
