@@ -44,7 +44,13 @@ return {
 		callback = function(opts)
 			Utils.play(opts.sound)
 			-- add a delay
-			os.execute("sleep 0.5")
+			local duration = 0
+			for _, v in pairs(opts.sound) do
+				duration = duration + (v.env_attack or 0)
+				duration = duration + (v.env_sustain or 0)
+				duration = duration + (v.env_decay or 0)
+			end
+			os.execute("sleep " .. duration + 0.0001)
 		end,
 	},
 
