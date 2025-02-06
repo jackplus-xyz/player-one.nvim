@@ -42,3 +42,45 @@
   "sample_size": 8
 }
 --]]
+
+local State = require("player-one.state")
+local Utils = require("player-one.utils")
+
+local M = {}
+
+local group = vim.api.nvim_create_augroup("PlayerOne", { clear = true })
+
+local function create_autocmds(autocmd, sound, callback)
+	vim.api.nvim_create_autocmd(autocmd, {
+		group = group,
+		callback = function()
+			if State.is_enabled then
+				if callback then
+					local opts = {
+						group = group,
+						sound = sound,
+					}
+					callback(opts)
+				else
+					Utils.play(sound)
+				end
+			end
+		end,
+	})
+end
+
+function M.load(sounds)
+	local presets = { "tone", "synth", "crystal" }
+
+	if sounds then
+		if vim.tbl_contains(presets, sounds) then
+			sounds = require("player-one.sounds." .. sounds)
+		end
+
+		for _, v in ipairs(sounds) do
+			create_autocmds(v.event, v.sound, v.callback)
+		end
+	end
+end
+
+return M

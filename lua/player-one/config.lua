@@ -3,10 +3,10 @@ local State = require("player-one.state")
 
 local M = {}
 
--- TODO: Add type annotations for better support
+-- TODO: Add type annotations
 local defaults = {
 	is_enabled = true,
-	preset = "tone",
+	sounds = "tone",
 }
 
 function M.setup(options)

@@ -1,4 +1,4 @@
-local Autocmd = require("player-one.autocmd")
+local Sounds = require("player-one.sounds")
 local State = require("player-one.state")
 local Utils = require("player-one.utils")
 
@@ -7,10 +7,7 @@ local M = {}
 -- TODO: add error handling for public APIs
 function M.enable()
 	State.is_enabled = true
-	-- TODO: handle preset loading
-	if State.preset and State.preset ~= "" and State.preset ~= "none" then
-		Autocmd.setup(State.preset)
-	end
+	Sounds.load(State.sounds)
 end
 
 -- TODO: add proper cleanup
