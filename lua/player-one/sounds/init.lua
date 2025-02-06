@@ -72,14 +72,32 @@ end
 function M.load(sounds)
 	local presets = { "tone", "synth", "crystal" }
 
-	if sounds then
-		if vim.tbl_contains(presets, sounds) then
-			sounds = require("player-one.sounds." .. sounds)
-		end
+	if not sounds then
+		return
+	end
 
-		for _, v in ipairs(sounds) do
-			create_autocmds(v.event, v.sound, v.callback)
+	if type(sounds) ~= "table" and type(sounds) ~= "string" then
+		error("sounds parameter must be a table or string")
+	end
+
+	if type(sounds) == "string" then
+		if not vim.tbl_contains(presets, sounds) then
+			error(string.format("Invalid preset '%s'. Available presets: %s", sounds, table.concat(presets, ", ")))
 		end
+		sounds = require("player-one.sounds." .. sounds)
+	end
+
+	for i, v in ipairs(sounds) do
+		if type(v) ~= "table" then
+			error(string.format("Invalid sound configuration at index %d", i))
+		end
+		if not v.event then
+			error(string.format("Missing 'event' in sound configuration at index %d", i))
+		end
+		if not v.sound then
+			error(string.format("Missing 'sound' in sound configuration at index %d", i))
+		end
+		create_autocmds(v.event, v.sound, v.callback)
 	end
 end
 
