@@ -11,11 +11,7 @@ local function create_autocmds(autocmd, sound, callback)
 		callback = function()
 			if State.is_enabled then
 				if callback then
-					local opts = {
-						group = group,
-						sound = sound,
-					}
-					callback(opts)
+					callback(sound)
 				else
 					Utils.play(sound)
 				end
