@@ -121,7 +121,7 @@ end
 
 local function process_sound_params(params, callback)
 	local min_interval = State.min_interval
-	local current_time = vim.loop.now()
+	local current_time = vim.uv.now()
 	local time_diff = (current_time - last_play_time) / 1000 -- Convert to seconds
 
 	if time_diff < min_interval then
