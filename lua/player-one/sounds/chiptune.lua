@@ -1,3 +1,5 @@
+--- @brief Chiptune-style sound module that maps musical notes to sound effects
+--- Each sound is generated from a base musical note to create an 8-bit/retro feel
 local Utils = require("player-one.utils")
 local group = vim.api.nvim_create_augroup("PlayerOne", { clear = true })
 
