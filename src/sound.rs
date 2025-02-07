@@ -120,105 +120,140 @@ impl SoundParams {
             };
         }
         if let Ok(v) = table.get::<f32>("env_attack") {
-            sample.env_attack = ((v * 44100.0) / 100000.0).sqrt();
+            sample.env_attack = ((v.max(0.0) * 44100.0) / 100000.0).sqrt().clamp(0.0, 1.0);
         }
         if let Ok(v) = table.get::<f32>("env_sustain") {
-            sample.env_sustain = ((v * 44100.0) / 100000.0).sqrt();
+            sample.env_sustain = ((v.max(0.0) * 44100.0) / 100000.0).sqrt().clamp(0.0, 1.0);
         }
         if let Ok(v) = table.get::<f32>("env_punch") {
-            sample.env_punch = v / 100.0;
+            sample.env_punch = (v / 100.0).clamp(-1.0, 1.0);
         }
         if let Ok(v) = table.get::<f32>("env_decay") {
-            sample.env_decay = ((v * 44100.0) / 100000.0).sqrt();
+            sample.env_decay = ((v.max(0.0) * 44100.0) / 100000.0).sqrt().clamp(0.0, 1.0);
         }
 
         if let Ok(v) = table.get::<f64>("base_freq") {
-            sample.base_freq = (v * 100.0 / (8.0 * 44100.0) - 0.001).sqrt();
+            sample.base_freq = (v * 100.0 / (8.0 * 44100.0) - 0.001)
+                .max(0.0)
+                .sqrt()
+                .clamp(0.0, 1.0);
         }
         if let Ok(v) = table.get::<f64>("freq_limit") {
-            sample.freq_limit = (v * 100.0 / (8.0 * 44100.0) - 0.001).sqrt();
+            sample.freq_limit = (v * 100.0 / (8.0 * 44100.0) - 0.001)
+                .max(0.0)
+                .sqrt()
+                .clamp(0.0, 1.0);
         }
         if let Ok(v) = table.get::<f64>("freq_ramp") {
             sample.freq_ramp = if v == 0.0 {
                 0.0
             } else {
-                (1.0 - (-v / 44100.0 * std::f64::consts::LN_2).exp() / 0.01).cbrt()
+                (1.0 - (-v / 44100.0 * std::f64::consts::LN_2).exp() / 0.01)
+                    .cbrt()
+                    .clamp(-1.0, 1.0)
             }
         }
         if let Ok(v) = table.get::<f64>("freq_dramp") {
-            sample.freq_dramp = (v * (-44101.0_f64 / 44100.0).exp2() / 44100.0 / -0.000001).cbrt();
+            sample.freq_dramp = (v * (-44101.0_f64 / 44100.0).exp2() / 44100.0 / -0.000001)
+                .cbrt()
+                .clamp(-1.0, 1.0);
         }
 
         if let Ok(v) = table.get::<f64>("vib_speed") {
-            sample.vib_speed = ((64.0 / 441000.0) * v / 0.01).sqrt();
+            sample.vib_speed = ((64.0 / 441000.0) * v.max(0.0) / 0.01)
+                .sqrt()
+                .clamp(0.0, 1.0);
         }
         if let Ok(v) = table.get::<f64>("vib_strength") {
-            sample.vib_strength = (v / 100.0) / 0.5;
+            sample.vib_strength = ((v / 100.0) / 0.5).clamp(0.0, 1.0);
         }
 
-        if let Ok(v) = table.get::<f64>("arp_mod") {
-            sample.arp_mod = if (1.0 / v) < 1.0 {
-                ((1.0 - (1.0 / v)) / 0.9).sqrt()
+        if let Ok(mut v) = table.get::<f64>("arp_mod") {
+            if v == 0.0 {
+                sample.arp_mod = 0.0;
             } else {
-                -((1.0 / v - 1.0) / 10.0).sqrt()
-            };
+                v = if (1.0 / v) < 1.0 {
+                    ((1.0 - (1.0 / v)) / 0.9).sqrt()
+                } else {
+                    -((1.0 / v - 1.0) / 10.0).sqrt()
+                };
+                sample.arp_mod = v.clamp(-1.0, 1.0);
+            }
         }
         if let Ok(v) = table.get::<f32>("arp_speed") {
-            sample.arp_speed = if v * 44100.0 == 0.0 {
+            sample.arp_speed = if v == 0.0 {
                 1.0
             } else {
-                1.0 - ((v * 44100.0 - if v * 44100.0 < 100.0 { 30.0 } else { 32.0 }) / 20000.0)
-                    .sqrt()
+                (1.0 - ((v * 44100.0 - if v * 44100.0 < 100.0 { 30.0 } else { 32.0 }) / 20000.0)
+                    .sqrt())
+                .clamp(0.0, 1.0)
             };
         }
 
         if let Ok(v) = table.get::<f32>("duty") {
-            sample.duty = ((v / 100.0) - 0.5) / -0.5;
+            sample.duty = ((0.5 - (v / 100.0)) / 0.5).clamp(0.0, 1.0)
         }
         if let Ok(v) = table.get::<f32>("duty_ramp") {
-            sample.duty_ramp = (v / (8.0 * 44100.0)) / -0.00005;
+            sample.duty_ramp = ((v / (8.0 * 44100.0)) / -0.00005).clamp(-1.0, 1.0);
         }
 
         if let Ok(v) = table.get::<f32>("repeat_speed") {
-            sample.repeat_speed = if v <= 0.0 {
+            let coverted = if v <= 0.0 {
                 0.0
             } else if v > 1378.0 {
-                32.0
+                1.0
             } else {
-                -(((44100.0 / v) - 32.0) / 20000.0).sqrt() - 1.0
+                1.0 - (((44100.0 / v) - 32.0) / 20000.0).sqrt()
             };
+            sample.repeat_speed = coverted.clamp(0.0, 1.0);
         }
 
         if let Ok(v) = table.get::<f32>("pha_offset") {
-            sample.pha_offset = if v < 0.0 { -1.0 } else { 1.0 } * (v.abs() / 1020.0).sqrt();
+            let converted = {
+                let sign = if v < 0.0 { -1.0 } else { 1.0 };
+                sign * (v.abs() / 1020.0).sqrt()
+            };
+            sample.pha_offset = converted.clamp(-1.0, 1.0);
         }
         if let Ok(v) = table.get::<f32>("pha_ramp") {
-            sample.pha_ramp = if v < 0.0 { -1.0 } else { 1.0 } * v.abs().sqrt();
+            let converted = {
+                let sign = if v < 0.0 { -1.0 } else { 1.0 };
+                sign * v.abs().sqrt()
+            };
+            sample.pha_ramp = converted.clamp(-1.0, 1.0);
         }
 
         if let Ok(v) = table.get::<f32>("lpf_freq") {
-            sample.lpf_freq = (v / (v + 8.0 * 44100.0) / 0.1).cbrt();
+            sample.lpf_freq = (v / (v + 8.0 * 44100.0) / 0.1).cbrt().clamp(0.0, 1.0);
         }
         if let Ok(v) = table.get::<f32>("lpf_ramp") {
-            sample.lpf_ramp = if v == 0.0 {
+            let converted = if v == 0.0 {
                 0.0
             } else {
                 (v.powf(1.0 / 44100.0) - 1.0) / 0.0001
-            }
+            };
+            sample.lpf_ramp = converted.clamp(-1.0, 1.0);
         }
         if let Ok(v) = table.get::<f32>("lpf_resonance") {
-            sample.lpf_resonance = ((1.0 / (((1.0 - v / 100.0) / 0.11) / 5.0) - 1.0) / 20.0).sqrt();
+            let inner = ((1.0 - v / 100.0) / 0.11) / 5.0;
+            let converted = if inner == 0.0 {
+                0.0
+            } else {
+                ((1.0 / inner - 1.0) / 20.0).sqrt()
+            };
+            sample.lpf_resonance = converted.clamp(0.0, 1.0);
         }
 
         if let Ok(v) = table.get::<f32>("hpf_freq") {
-            sample.hpf_freq = (v / (v + 8.0 * 44100.0) / 0.1).sqrt();
+            sample.hpf_freq = (v / (v + 8.0 * 44100.0) / 0.1).sqrt().clamp(0.0, 1.0);
         }
         if let Ok(v) = table.get::<f32>("hpf_ramp") {
-            sample.hpf_ramp = if v == 0.0 {
+            let converted = if v == 0.0 {
                 0.0
             } else {
                 (v.powf(1.0 / 44100.0) - 1.0) / 0.0003
             };
+            sample.hpf_ramp = converted.clamp(-1.0, 1.0);
         }
         // TODO: add volume config?
         // if let Ok(v) = table.get::<f64>("sound_vol") {

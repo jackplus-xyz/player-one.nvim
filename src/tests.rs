@@ -260,8 +260,13 @@ fn test_json_params() {
     player.play_async(params).expect("Failed to play sound");
 
     let invalid_json = r#"{ invalid json }"#;
+
     assert!(SoundParams::from_json(invalid_json).is_err());
 
     let incomplete_json = r#"{ "wave_type": 1 }"#;
-    assert!(SoundParams::from_json(incomplete_json).is_err());
+    let sample = SoundParams::from_json(incomplete_json).expect("Should parse JSON successfully");
+    let params = SoundParams::new(sample);
+    player
+        .play_async(params)
+        .expect("Failed to play incomplete json");
 }
