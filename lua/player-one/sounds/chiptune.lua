@@ -18,6 +18,7 @@ return {
 			Utils.play(sound)
 
 			-- Wait 1 second after VimEnter before registering the CursorMoved autocmd.
+			-- This is useful when using a welcome/dashboard plugin
 			vim.defer_fn(function()
 				vim.api.nvim_create_autocmd("CursorMoved", {
 					group = group,
@@ -42,15 +43,7 @@ return {
 			{ wave_type = 1, base_freq = 1318.51, env_attack = 0.0, env_sustain = 0.02, env_decay = 0.08 },
 		},
 		callback = function(sound)
-			Utils.play(sound)
-			-- add a delay
-			local duration = 0
-			for _, v in pairs(sound) do
-				duration = duration + (v.env_attack or 0)
-				duration = duration + (v.env_sustain or 0)
-				duration = duration + (v.env_decay or 0)
-			end
-			os.execute("sleep " .. duration + 0.0001)
+			Utils.play_async(sound)
 		end,
 	},
 	{
