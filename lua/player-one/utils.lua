@@ -1,6 +1,9 @@
 local Lib = require("player-one.lib")
+local State = require("player-one.state")
 
 local M = {}
+
+local last_play_time = 0
 
 local function clamp(value, min, max)
 	return math.min(math.max(value, min), max)
@@ -117,6 +120,16 @@ local function sanitize_json_params(json_params)
 end
 
 local function process_sound_params(params, callback)
+	local min_interval = State.min_interval
+	local current_time = vim.loop.now()
+	local time_diff = (current_time - last_play_time) / 1000 -- Convert to seconds
+
+	if time_diff < min_interval then
+		return
+	end
+
+	last_play_time = current_time
+
 	if type(callback) ~= "function" then
 		error("Callback must be a function")
 	end

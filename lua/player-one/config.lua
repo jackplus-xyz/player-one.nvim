@@ -7,6 +7,7 @@ local M = {}
 local defaults = {
 	is_enabled = true,
 	sounds = "tone",
+	min_interval = 0.05,
 }
 
 function M.setup(options)
