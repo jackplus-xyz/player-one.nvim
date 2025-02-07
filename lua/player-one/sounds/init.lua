@@ -21,7 +21,7 @@ local function create_autocmds(autocmd, sound, callback)
 end
 
 function M.load(sounds)
-	local presets = { "tone", "synth", "crystal" }
+	local presets = { "chiptune", "synth", "crystal" }
 
 	if not sounds then
 		return

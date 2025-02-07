@@ -6,7 +6,7 @@ local M = {}
 -- TODO: Add type annotations
 local defaults = {
 	is_enabled = true,
-	sounds = "tone",
+	sounds = "chiptune",
 	min_interval = 0.05,
 }
 

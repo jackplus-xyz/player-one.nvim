@@ -34,7 +34,14 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 `player-one.nvim` comes with the following default configuration:
 
 ```lua
-{}
+{
+  is_enabled = true,  -- Whether to enable the plugin when loaded
+	preset = "chiptune",    -- Whether to use one of the preset sound packs, set it to "none" or false to disable.
+                      -- Available options: "chiptune", "crystal", "synth"
+                      -- The preset sound packs are designed to provide a pleasant out-of-the-box user experience
+                      -- and give a general idea of what the plugin can do.
+                      -- They are therefore minimalistic and simple. You can create your own sound packs to better suit your needs.
+}
 ```
 
 ### Custom Sounds
@@ -191,6 +198,14 @@ Or a color scheme with vibrant colors on dark background:
 ### Font with Retro Look
 
 Try to use a font that looks like it's from the past.
+
+### Play soundtracks from games you love
+
+This may improve your productity or may make you shed tears of nostalgia. Some awesome soundtracks to try:
+
+- Little Root Town from Pokemon Ruby/Sapphire/Emerald
+- Running Through the Cyber World from Mega Man Battle Network
+- Main Theme from The Legend of Zelda
 
 ## Credits
 
