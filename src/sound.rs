@@ -30,6 +30,7 @@ struct JsonParams {
     p_lpf_resonance: f32,
     p_hpf_freq: f32,
     p_hpf_ramp: f32,
+    sound_vol: f32,
 }
 
 impl Default for JsonParams {
@@ -58,6 +59,7 @@ impl Default for JsonParams {
             p_lpf_resonance: 0.0,
             p_hpf_freq: 0.0,
             p_hpf_ramp: 0.0,
+            sound_vol: 0.2,
         }
     }
 }
@@ -93,21 +95,31 @@ struct SoundConfig {
 #[derive(Clone)]
 pub struct SoundParams {
     sample: Arc<Sample>,
+    volume: f32,
 }
 
 impl SoundParams {
     pub fn new(sample: Sample) -> Self {
         Self {
             sample: Arc::new(sample),
+            volume: 0.2,
         }
     }
 
-    pub fn generator(&self) -> Generator {
-        Generator::new(*self.sample.as_ref())
+    pub fn with_volume(mut self, volume: f32) -> Self {
+        self.volume = volume;
+        self
     }
 
-    pub fn from_table(table: LuaTable) -> LuaResult<Sample> {
+    pub fn generator(&self) -> Generator {
+        let mut gen = Generator::new(*self.sample.as_ref());
+        gen.volume = self.volume;
+        gen
+    }
+
+    pub fn from_table(table: LuaTable) -> LuaResult<SoundParams> {
         let mut sample = Sample::new();
+        let mut volume = 0.2;
 
         if let Ok(wave_type) = table.get("wave_type") {
             sample.wave_type = match wave_type {
@@ -255,14 +267,16 @@ impl SoundParams {
             };
             sample.hpf_ramp = converted.clamp(-1.0, 1.0);
         }
-        // TODO: add volume config?
-        // if let Ok(v) = table.get::<f64>("sound_vol") {
-        //     sample.sound_vol = (10.0_f64.powf(v / 10.0)).sqrt().add(1.0).ln();
+        if let Ok(v) = table.get::<f32>("sound_vol") {
+            volume = ((10.0_f32.powf(v / 10.0)).sqrt() + 1.0)
+                .ln()
+                .clamp(0.0, 1.0);
+        }
 
-        Ok(sample)
+        Ok(SoundParams::new(sample).with_volume(volume))
     }
 
-    pub fn from_json(json_str: &str) -> LuaResult<Sample> {
+    pub fn from_json(json_str: &str) -> LuaResult<SoundParams> {
         let json: JsonParams = serde_json::from_str(json_str)
             .map_err(|e| mlua::Error::RuntimeError(format!("Invalid JSON: {}", e)))?;
 
@@ -299,7 +313,7 @@ impl SoundParams {
         sample.arp_speed = json.p_arp_speed;
         sample.arp_mod = json.p_arp_mod;
 
-        Ok(sample)
+        Ok(SoundParams::new(sample).with_volume(json.sound_vol))
     }
 }
 
@@ -308,11 +322,11 @@ impl FromLua for SoundParams {
         match value {
             LuaValue::Table(table) => {
                 let sample = Self::from_table(table)?;
-                Ok(SoundParams::new(sample))
+                Ok(sample)
             }
             LuaValue::String(s) => {
                 let sample = Self::from_json(&s.to_str()?)?;
-                Ok(SoundParams::new(sample))
+                Ok(sample)
             }
             _ => Err(mlua::Error::RuntimeError(
                 "Expected table or string for SoundParams".into(),

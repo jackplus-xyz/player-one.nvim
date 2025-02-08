@@ -199,6 +199,74 @@ describe("Utils", function()
 				ok_json,
 				string.format("Failed to play sound with JSON configuration: %s", tostring(err_json))
 			)
+			os.execute("sleep 0.5")
+		end)
+
+		it("should handle different volume levels with table", function()
+			local params = {
+				wave_type = 1,
+				base_freq = 440.0,
+				env_attack = 0.0,
+				env_sustain = 0.001,
+				env_decay = 0.2,
+				sound_vol = -6.0,
+			}
+
+			local volumes = { -60.0, -24.0, -12.0, -6.0, 10.0 }
+			for _, volume in ipairs(volumes) do
+				params.sound_vol = volume
+				local ok, err = pcall(function()
+					Utils.play_async(params)
+				end)
+				assert.is_true(
+					ok,
+					string.format("Failed to play sound at volume %f with table: %s", volume, tostring(err))
+				)
+			end
+		end)
+
+		it("should handle different volume levels with JSON", function()
+			local base_params = {
+				oldParams = true,
+				wave_type = 1,
+				p_env_attack = 0,
+				p_env_sustain = 0.024555768060600138,
+				p_env_punch = 0.4571553721133509,
+				p_env_decay = 0.3423639066276736,
+				p_base_freq = 0.5500696633190347,
+				p_freq_limit = 0,
+				p_freq_ramp = 0,
+				p_freq_dramp = 0,
+				p_vib_strength = 0,
+				p_vib_speed = 0,
+				p_arp_mod = 0.5329522492796008,
+				p_arp_speed = 0.689393158112304,
+				p_duty = 0,
+				p_duty_ramp = 0,
+				p_repeat_speed = 0,
+				p_pha_offset = 0,
+				p_pha_ramp = 0,
+				p_lpf_freq = 1,
+				p_lpf_ramp = 0,
+				p_lpf_resonance = 0,
+				p_hpf_freq = 0,
+				p_hpf_ramp = 0,
+				sample_rate = 44100,
+				sample_size = 8,
+			}
+
+			local volumes = { 0.05, 0.25, 0.5, 0.75, 1.0 }
+
+			for _, volume in ipairs(volumes) do
+				local params = vim.tbl_deep_extend("force", base_params, { sound_vol = volume })
+				local json_str = vim.json.encode(params)
+
+				local ok, err = pcall(function()
+					Utils.play_async(json_str)
+				end)
+
+				assert.is_true(ok, string.format("Failed to play sound at volume %f: %s", volume, tostring(err)))
+			end
 		end)
 	end)
 end)
