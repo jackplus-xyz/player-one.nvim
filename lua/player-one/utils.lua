@@ -40,6 +40,7 @@ local function sanitize_params(params)
 		"arp_mod",
 		"sample_rate",
 		"sample_size",
+		"sound_vol",
 	}
 
 	local sanitized = {}
@@ -120,7 +121,7 @@ local function sanitize_json_params(json_params)
 end
 
 local function process_sound_params(params, callback)
-	local min_interval = State.min_interval
+	local min_interval = State.min_interval or 0
 	local current_time = vim.uv.now()
 	local time_diff = (current_time - last_play_time) / 1000 -- Convert to seconds
 
