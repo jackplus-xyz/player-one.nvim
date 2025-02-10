@@ -20,6 +20,16 @@ local function create_autocmds(autocmd, sound, callback)
 	})
 end
 
+-- TODO: add more preset?
+-- "chiptune"
+-- "synth"
+-- "crystal"
+-- "mechanical"
+-- "minimal"
+-- "retro"
+-- "ambient"
+-- "digital"
+
 function M.load(sounds)
 	local presets = { "chiptune", "synth", "crystal" }
 
