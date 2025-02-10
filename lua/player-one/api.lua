@@ -7,7 +7,7 @@ local M = {}
 -- TODO: add error handling for public APIs
 function M.enable()
 	State.is_enabled = true
-	Themes.load(State.theme)
+	Themes.setup()
 end
 
 -- TODO: add proper cleanup
@@ -37,6 +37,11 @@ end
 function M.stop()
 	Utils.stop()
 end
+
+-- TODO: Add api to load different theme?
+-- function M.load_theme(theme)
+-- 	Themes.load(theme)
+-- end
 
 -- TODO: add api to play internal presets & sfxr presets
 

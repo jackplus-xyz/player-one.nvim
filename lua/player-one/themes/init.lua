@@ -20,19 +20,22 @@ local function create_autocmds(autocmd, sound, callback)
 	})
 end
 
-function M.setup()
+local function clear_autocmds()
+	vim.api.nvim_clear_autocmds({ group = group })
+end
+
+function M.load(theme)
+	if theme == "default" or not theme then
+		theme = State.curr_theme
+		if not theme then
+			return
+		end
+	end
+
+	clear_autocmds()
+
 	-- TODO: add more preset?
 	-- { "chiptune" ,"synth" ,"crystal" ,"mechanical" ,"minimal" ,"retro" ,"ambient" ,"digital" }
-	local theme = State.theme
-
-	if not theme or theme == "" or theme == {} then
-		return
-	end
-
-	if type(theme) ~= "table" and type(theme) ~= "string" then
-		error("themes parameter must be a table or string")
-	end
-
 	local presets = { "chiptune", "synth", "crystal" }
 	if type(theme) == "string" then
 		if not vim.tbl_contains(presets, theme) then
@@ -53,6 +56,21 @@ function M.setup()
 		end
 		create_autocmds(v.event, v.sound, v.callback)
 	end
+end
+
+function M.setup()
+	local theme = State.theme
+
+	if not theme or theme == "" or theme == {} then
+		return
+	end
+
+	if type(theme) ~= "table" and type(theme) ~= "string" then
+		error("themes parameter must be a table or string")
+	end
+
+	State.curr_theme = theme
+	M.load(theme)
 end
 
 return M
