@@ -5,16 +5,12 @@ local M = {}
 
 local last_play_time = 0
 
-local function clamp(value, min, max)
-	return math.min(math.max(value, min), max)
-end
-
 local function sanitize_params(params)
 	if not params then
 		return {}
 	end
 
-	local allowed_keys = {
+	local valid_keys = {
 		"wave_type",
 		"base_freq",
 		"freq_limit",
@@ -45,11 +41,15 @@ local function sanitize_params(params)
 
 	local sanitized = {}
 
-	for _, key in ipairs(allowed_keys) do
+	for _, key in ipairs(valid_keys) do
 		if params[key] then
 			local value = params[key]
+			if not value or type(value) ~= "number" then
+				error("Invalid type for " .. key .. ": expected number, got " .. type(value))
+			end
+
 			-- Value that should be passed as an integer
-			if type(value) == "number" and (key == "wave_type" or key == "sample_rate" or key == "sample_size") then
+			if key == "wave_type" or key == "sample_rate" or key == "sample_size" then
 				sanitized[key] = math.floor(value)
 			else
 				sanitized[key] = value
@@ -66,7 +66,7 @@ local function sanitize_json_params(json_params)
 		error("Failed to parse sound configuration: " .. params)
 	end
 
-	local unsigned_params = {
+	local valid_keys = {
 		"p_env_attack",
 		"p_env_sustain",
 		"p_env_punch",
@@ -81,10 +81,6 @@ local function sanitize_json_params(json_params)
 		"p_lpf_freq",
 		"p_lpf_resonance",
 		"p_hpf_freq",
-		"sound_vol",
-	}
-
-	local signed_params = {
 		"p_freq_ramp",
 		"p_freq_dramp",
 		"p_arp_mod",
@@ -93,28 +89,20 @@ local function sanitize_json_params(json_params)
 		"p_pha_ramp",
 		"p_lpf_ramp",
 		"p_hpf_ramp",
+		"sound_vol",
 	}
 
-	for _, param in ipairs(unsigned_params) do
-		if params[param] then
-			params[param] = clamp(params[param], 0, 1)
+	for _, key in ipairs(valid_keys) do
+		local value = params[key]
+		if not value or type(value) ~= "number" then
+			error("Invalid type in json for " .. key .. ": expected number, got " .. type(value))
 		end
-	end
 
-	for _, param in ipairs(signed_params) do
-		if params[param] then
-			params[param] = clamp(params[param], -1, 1)
+		if key == "wave_type" or key == "sample_rate" or key == "sample_size" then
+			params[key] = math.floor(value)
+		else
+			params[key] = value
 		end
-	end
-
-	if params.sample_rate then
-		params.sample_rate = math.floor(params.sample_rate)
-	end
-	if params.sample_size then
-		params.sample_size = math.floor(params.sample_size)
-	end
-	if params.wave_type then
-		params.wave_type = math.floor(params.wave_type)
 	end
 
 	return vim.json.encode(params)
@@ -125,6 +113,7 @@ local function process_sound_params(params, callback)
 	local current_time = vim.uv.now()
 	local time_diff = (current_time - last_play_time) / 1000 -- Convert to seconds
 
+	-- Prevents sounds from playing too frequently
 	if time_diff < min_interval then
 		return
 	end
