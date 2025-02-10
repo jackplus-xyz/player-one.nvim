@@ -1,4 +1,4 @@
-local Sounds = require("player-one.sounds")
+local Themes = require("player-one.themes")
 local State = require("player-one.state")
 local Utils = require("player-one.utils")
 
@@ -7,7 +7,7 @@ local M = {}
 -- TODO: add error handling for public APIs
 function M.enable()
 	State.is_enabled = true
-	Sounds.load(State.sounds)
+	Themes.load(State.theme)
 end
 
 -- TODO: add proper cleanup
@@ -29,6 +29,7 @@ function M.toggle()
 	vim.notify(string.format("**PlayerOne** %s", State.is_enabled and "enabled" or "disabled"))
 end
 
+-- TODO: Imprvoe API design, consider keeping/removing play/stop/toggle
 function M.play(params)
 	Utils.play(params)
 end

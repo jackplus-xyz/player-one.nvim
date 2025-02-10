@@ -36,7 +36,7 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 ```lua
 {
   is_enabled = true,  -- Whether to enable the plugin when loaded
-	sounds = "chiptune",    -- Whether to use one of the preset sound packs, set it to "none" or false to disable.
+	theme = "chiptune",    -- Whether to use one of the preset sound packs, set it to "none" or false to disable.
                       -- Available options: "chiptune", "crystal", "synth"
                       -- The preset sound packs are designed to provide a pleasant out-of-the-box user experience
                       -- and give a general idea of what the plugin can do.

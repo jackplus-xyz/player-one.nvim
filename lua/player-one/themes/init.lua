@@ -21,6 +21,7 @@ local function create_autocmds(autocmd, sound, callback)
 end
 
 -- TODO: add more preset?
+--
 -- "chiptune"
 -- "synth"
 -- "crystal"
@@ -30,25 +31,25 @@ end
 -- "ambient"
 -- "digital"
 
-function M.load(sounds)
+function M.load(theme)
 	local presets = { "chiptune", "synth", "crystal" }
 
-	if not sounds then
-		return
+	if not theme then
+		error("Sound theme not provided. Please specify one of: " .. table.concat(presets, ", "))
 	end
 
-	if type(sounds) ~= "table" and type(sounds) ~= "string" then
-		error("sounds parameter must be a table or string")
+	if type(theme) ~= "table" and type(theme) ~= "string" then
+		error("themes parameter must be a table or string")
 	end
 
-	if type(sounds) == "string" then
-		if not vim.tbl_contains(presets, sounds) then
-			error(string.format("Invalid preset '%s'. Available presets: %s", sounds, table.concat(presets, ", ")))
+	if type(theme) == "string" then
+		if not vim.tbl_contains(presets, theme) then
+			error(string.format("Invalid preset '%s'. Available presets: %s", theme, table.concat(presets, ", ")))
 		end
-		sounds = require("player-one.sounds." .. sounds)
+		theme = require("player-one.themes." .. theme)
 	end
 
-	for i, v in ipairs(sounds) do
+	for i, v in ipairs(theme) do
 		if type(v) ~= "table" then
 			error(string.format("Invalid sound configuration at index %d", i))
 		end
