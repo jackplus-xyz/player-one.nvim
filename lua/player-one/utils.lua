@@ -42,9 +42,9 @@ local function sanitize_params(params)
 	local sanitized = {}
 
 	for _, key in ipairs(valid_keys) do
-		if params[key] then
-			local value = params[key]
-			if not value or type(value) ~= "number" then
+		local value = params[key]
+		if value then
+			if type(value) ~= "number" then
 				error("Invalid type for " .. key .. ": expected number, got " .. type(value))
 			end
 
@@ -94,14 +94,16 @@ local function sanitize_json_params(json_params)
 
 	for _, key in ipairs(valid_keys) do
 		local value = params[key]
-		if not value or type(value) ~= "number" then
-			error("Invalid type in json for " .. key .. ": expected number, got " .. type(value))
-		end
+		if value then
+			if type(value) ~= "number" then
+				error("Invalid type in json for " .. key .. ": expected number, got " .. type(value))
+			end
 
-		if key == "wave_type" or key == "sample_rate" or key == "sample_size" then
-			params[key] = math.floor(value)
-		else
-			params[key] = value
+			if key == "wave_type" or key == "sample_rate" or key == "sample_size" then
+				params[key] = math.floor(value)
+			else
+				params[key] = value
+			end
 		end
 	end
 
