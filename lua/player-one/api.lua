@@ -17,6 +17,7 @@ end
 -- - Free resources
 function M.disable()
 	State.is_enabled = false
+	Utils.clear_autocmds()
 	Utils.stop()
 end
 
@@ -38,10 +39,9 @@ function M.stop()
 	Utils.stop()
 end
 
--- TODO: Add api to load different theme?
--- function M.load_theme(theme)
--- 	Themes.load(theme)
--- end
+function M.load_theme(theme)
+	Utils.load_theme(theme)
+end
 
 -- TODO: add api to play internal presets & sfxr presets
 
