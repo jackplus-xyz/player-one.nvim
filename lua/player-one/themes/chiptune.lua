@@ -1,7 +1,8 @@
 --- @brief Chiptune-style sound module that maps musical notes to sound effects
 --- Each sound is generated from a base musical note to create an 8-bit/retro feel
 local Utils = require("player-one.utils")
-local group = vim.api.nvim_create_augroup("PlayerOne", { clear = true })
+
+local is_cursormoved_enabled = false
 
 return {
 	{
@@ -19,23 +20,25 @@ return {
 		callback = function(sound)
 			Utils.play(sound)
 
-			-- Wait 1 second after VimEnter before registering the CursorMoved autocmd.
-			-- This is useful when using a welcome/dashboard plugin
 			vim.defer_fn(function()
-				vim.api.nvim_create_autocmd("CursorMoved", {
-					group = group,
-					callback = function()
-						local cursor_moved = {
-							wave_type = 1,
-							base_freq = 440.0,
-							env_attack = 0.0,
-							env_sustain = 0.001,
-							env_decay = 0.05,
-						}
-						Utils.play(cursor_moved)
-					end,
-				})
+				is_cursormoved_enabled = true
 			end, 1000)
+		end,
+	},
+	{
+		event = "CursorMoved",
+		sound = {
+			wave_type = 1,
+			base_freq = 440.0,
+			env_attack = 0.0,
+			env_sustain = 0.001,
+			env_decay = 0.05,
+		},
+		callback = function(sound)
+			if not is_cursormoved_enabled then
+				return
+			end
+			Utils.play(sound)
 		end,
 	},
 	{
