@@ -185,7 +185,7 @@ function M.load_theme(theme)
 
 	-- TODO: add more preset?
 	-- { "chiptune" ,"synth" ,"crystal" ,"mechanical" ,"minimal" ,"retro" ,"ambient" ,"digital" }
-	local presets = { "chiptune", "synth", "crystal" }
+	local presets = State.presets
 	if type(theme) == "string" then
 		if not vim.tbl_contains(presets, theme) then
 			error(string.format("Invalid preset '%s'. Available presets: %s", theme, table.concat(presets, ", ")))
