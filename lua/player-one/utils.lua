@@ -4,7 +4,6 @@ local State = require("player-one.state")
 local M = {}
 
 local last_play_time = 0
-local group = vim.api.nvim_create_augroup("PlayerOne", { clear = true })
 
 local function sanitize_params(params)
 	if not params then
@@ -157,7 +156,7 @@ end
 
 function M.create_autocmds(autocmd, sound, callback)
 	vim.api.nvim_create_autocmd(autocmd, {
-		group = group,
+		group = State.group,
 		callback = function()
 			if State.is_enabled then
 				if callback then
@@ -171,8 +170,7 @@ function M.create_autocmds(autocmd, sound, callback)
 end
 
 function M.clear_autocmds()
-	-- FIXME: not really clearing all autocmds
-	vim.api.nvim_clear_autocmds({ group = group })
+	vim.api.nvim_clear_autocmds({ group = State.group })
 end
 
 function M.load_theme(theme)
