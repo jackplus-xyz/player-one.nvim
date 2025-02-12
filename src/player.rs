@@ -75,7 +75,7 @@ impl Player {
     }
 
     pub fn play_async(&self, params: SoundParams) -> Result<(), PlayError> {
-        self.play(params)?;
+        self.append(params)?;
 
         let sink = self
             .sink
