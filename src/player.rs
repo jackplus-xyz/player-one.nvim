@@ -1,5 +1,6 @@
 use crate::sound::SoundParams;
-use rodio::{OutputStream, Sink};
+use rodio::source::Source;
+use rodio::{OutputStream, OutputStreamHandle, Sink};
 use std::sync::{Arc, Mutex};
 use thiserror::Error;
 
@@ -14,6 +15,7 @@ pub enum PlayError {
 pub struct Player {
     sink: Arc<Mutex<Sink>>,
     _stream: OutputStream,
+    _handle: OutputStreamHandle,
 }
 
 impl Player {
@@ -26,11 +28,31 @@ impl Player {
         Ok(Self {
             sink: Arc::new(Mutex::new(sink)),
             _stream: stream,
+            _handle: handle,
         })
     }
 
-    // TODO: make this synchronous?
     pub fn play(&self, params: SoundParams) -> Result<(), PlayError> {
+        let mut generator = params.generator();
+
+        let total_duration = (generator.sample.env_attack.powi(2)
+            + generator.sample.env_sustain.powi(2)
+            + generator.sample.env_decay.powi(2))
+            * 100000.0;
+        let buffer_size = total_duration.ceil() as usize;
+
+        let mut buffer = vec![0.0; buffer_size];
+        generator.generate(&mut buffer);
+
+        let source = rodio::buffer::SamplesBuffer::new(1, 44100, buffer);
+
+        let _ = self._handle.play_raw(source.convert_samples());
+
+        Ok(())
+    }
+
+    // TODO: expose api to lua
+    pub fn append(&self, params: SoundParams) -> Result<(), PlayError> {
         let mut generator = params.generator();
 
         let total_duration = (generator.sample.env_attack.powi(2)
