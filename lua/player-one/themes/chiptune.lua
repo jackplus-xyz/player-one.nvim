@@ -18,7 +18,7 @@ return {
 			{ wave_type = 1, base_freq = 523.25, env_attack = 0.0, env_sustain = 0.001, env_decay = 0.15 },
 		},
 		callback = function(sound)
-			Utils.play(sound)
+			Utils.append(sound)
 
 			vim.defer_fn(function()
 				is_cursormoved_enabled = true
@@ -47,9 +47,7 @@ return {
 			{ wave_type = 1, base_freq = 1046.50, env_attack = 0.0, env_sustain = 0.02, env_decay = 0.1 },
 			{ wave_type = 1, base_freq = 1318.51, env_attack = 0.0, env_sustain = 0.02, env_decay = 0.08 },
 		},
-		callback = function(sound)
-			Utils.play_async(sound)
-		end,
+		callback = "play_async",
 	},
 	{
 		event = "BufWritePost",
@@ -57,6 +55,7 @@ return {
 			{ wave_type = 2, base_freq = 636.7, env_attack = 0.0, env_sustain = 0.001, env_decay = 0.15 },
 			{ wave_type = 2, base_freq = 523.25, env_attack = 0.0, env_sustain = 0.001, env_decay = 0.15 },
 		},
+		callback = "append",
 	},
 	{
 		event = "TextChangedI",
@@ -68,6 +67,7 @@ return {
 			{ wave_type = 1, base_freq = 1760.0, env_attack = 0.0, env_sustain = 0.001, env_decay = 0.15 },
 			{ wave_type = 1, base_freq = 2197.0, env_attack = 0.0, env_sustain = 0.001, env_decay = 0.15 },
 		},
+		callback = "append",
 	},
 	{
 		event = "CmdlineEnter",
@@ -75,6 +75,7 @@ return {
 			{ wave_type = 1, base_freq = 392.00, env_attack = 0.0, env_sustain = 0.001, env_decay = 0.05 },
 			{ wave_type = 1, base_freq = 523.25, env_attack = 0.0, env_sustain = 0.001, env_decay = 0.05 },
 		},
+		callback = "append",
 	},
 	{
 		event = "CmdlineChanged",

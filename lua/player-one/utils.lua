@@ -160,7 +160,21 @@ local function create_autocmds(autocmd, sound, callback)
 		callback = function()
 			if State.is_enabled then
 				if callback then
-					callback(sound)
+					if type(callback) == "function" then
+						callback(sound)
+					elseif type(callback) == "string" then
+						if callback == "append" then
+							M.append(sound)
+						elseif callback == "play" then
+							M.play(sound)
+						elseif callback == "play_async" then
+							M.play_async(sound)
+						else
+							error("Invalid callback string: " .. callback)
+						end
+					else
+						error("callback must be a function or a string")
+					end
 				else
 					M.play(sound)
 				end
@@ -209,6 +223,10 @@ end
 
 function M.play(params)
 	return process_sound_params(params, Lib.play)
+end
+
+function M.append(params)
+	return process_sound_params(params, Lib.append)
 end
 
 function M.play_async(params)
