@@ -263,3 +263,33 @@ fn test_volume_settings() {
         assert!(player.stop().is_ok());
     }
 }
+
+#[test]
+fn test_append_sound() {
+    use crate::player::Player;
+    use crate::sound::SoundParams;
+    use sfxr::Sample;
+    use sfxr::WaveType;
+    use std::time::Duration;
+
+    let player = Player::new().unwrap();
+
+    // Create two different sound samples.
+    let mut sample1 = Sample::new();
+    sample1.wave_type = WaveType::Square;
+    let params1 = SoundParams::new(sample1);
+
+    let mut sample2 = Sample::new();
+    sample2.wave_type = WaveType::Sine;
+    let params2 = SoundParams::new(sample2);
+
+    // Append two sounds sequentially.
+    assert!(player.append(params1).is_ok());
+    assert!(player.append(params2).is_ok());
+
+    // Give the sounds some time to play.
+    std::thread::sleep(Duration::from_millis(200));
+
+    // Stop playback.
+    assert!(player.stop().is_ok());
+}
