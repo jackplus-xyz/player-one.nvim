@@ -51,7 +51,6 @@ impl Player {
         Ok(())
     }
 
-    // TODO: expose api to lua
     pub fn append(&self, params: SoundParams) -> Result<(), PlayError> {
         let mut generator = params.generator();
 

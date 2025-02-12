@@ -12,6 +12,7 @@ pub fn create_lua_module(lua: &Lua) -> LuaResult<LuaTable> {
     let exports = lua.create_table()?;
 
     register_play(lua, &exports, player.clone())?;
+    register_append(lua, &exports, player.clone())?;
     register_play_async(lua, &exports, player.clone())?;
     register_play_preset(lua, &exports, player.clone())?;
     register_stop(lua, &exports, player)?;
@@ -25,6 +26,17 @@ fn register_play(lua: &Lua, exports: &LuaTable, player: Arc<Player>) -> LuaResul
         lua.create_function(move |_, params: SoundParams| {
             player
                 .play(params)
+                .map_err(|e| mlua::Error::external(e.to_string()))
+        })?,
+    )
+}
+
+fn register_append(lua: &Lua, exports: &LuaTable, player: Arc<Player>) -> LuaResult<()> {
+    exports.set(
+        "append",
+        lua.create_function(move |_, params: SoundParams| {
+            player
+                .append(params)
                 .map_err(|e| mlua::Error::external(e.to_string()))
         })?,
     )
