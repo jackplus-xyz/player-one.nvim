@@ -8,14 +8,10 @@ return {
 	{
 		event = "VimEnter",
 		sound = {
-			{ wave_type = 1, base_freq = 392.00, env_attack = 0.0, env_sustain = 0.001, env_decay = 0.15 },
-			{ wave_type = 1, base_freq = 369.99, env_attack = 0.0, env_sustain = 0.001, env_decay = 0.15 },
-			{ wave_type = 1, base_freq = 311.13, env_attack = 0.0, env_sustain = 0.001, env_decay = 0.15 },
-			{ wave_type = 1, base_freq = 220.00, env_attack = 0.0, env_sustain = 0.001, env_decay = 0.15 },
-			{ wave_type = 1, base_freq = 207.65, env_attack = 0.0, env_sustain = 0.001, env_decay = 0.15 },
-			{ wave_type = 1, base_freq = 329.63, env_attack = 0.0, env_sustain = 0.001, env_decay = 0.15 },
-			{ wave_type = 1, base_freq = 415.30, env_attack = 0.0, env_sustain = 0.001, env_decay = 0.15 },
 			{ wave_type = 1, base_freq = 523.25, env_attack = 0.0, env_sustain = 0.001, env_decay = 0.15 },
+			{ wave_type = 1, base_freq = 587.33, env_attack = 0.0, env_sustain = 0.001, env_decay = 0.15 },
+			{ wave_type = 1, base_freq = 659.25, env_attack = 0.0, env_sustain = 0.001, env_decay = 0.15 },
+			{ wave_type = 1, base_freq = 783.99, env_attack = 0.0, env_sustain = 0.001, env_decay = 0.15 },
 		},
 		callback = function(sound)
 			Utils.append(sound)
