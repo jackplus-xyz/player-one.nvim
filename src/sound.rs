@@ -247,11 +247,16 @@ impl SoundParams {
             sample.lpf_ramp = converted.clamp(-1.0, 1.0);
         }
         if let Ok(v) = table.get::<f32>("lpf_resonance") {
-            let inner = ((1.0 - v / 100.0) / 0.11) / 5.0;
-            let converted = if inner == 0.0 {
+            let inner = (((1.0 - v / 100.0) / 0.11) / 5.0).max(0.0);
+            let converted = if inner <= f32::EPSILON {
                 0.0
             } else {
-                ((1.0 / inner - 1.0) / 20.0).sqrt()
+                let value = (1.0 / inner - 1.0) / 20.0;
+                if value >= 0.0 {
+                    value.sqrt()
+                } else {
+                    0.0
+                }
             };
             sample.lpf_resonance = converted.clamp(0.0, 1.0);
         }
