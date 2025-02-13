@@ -10,11 +10,6 @@ function M.enable()
 	Themes.setup()
 end
 
--- TODO: add proper cleanup
--- - Stop all playing sounds
--- - Clear sound queue
--- - Remove event listeners
--- - Free resources
 function M.disable()
 	State.is_enabled = false
 	Utils.clear_autocmds()
@@ -30,7 +25,6 @@ function M.toggle()
 	vim.notify(string.format("**PlayerOne** %s", State.is_enabled and "enabled" or "disabled"))
 end
 
--- TODO: Imprvoe API design, consider keeping/removing play/stop/toggle
 function M.play(params)
 	Utils.play(params)
 end
