@@ -23,7 +23,7 @@ end
 
 M.setup()
 
----@type PlayerOneTheme
+---@type PlayerOne.Theme
 return {
 	{
 		event = "VimEnter",

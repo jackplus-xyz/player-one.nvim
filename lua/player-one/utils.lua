@@ -42,8 +42,8 @@ local M = {}
 local last_play_time = 0
 
 ---Sanitize and validate sound parameters
----@param params SoundParams|nil Raw parameters to sanitize
----@return SoundParams Sanitized parameters
+---@param params PlayerOne.SoundParams|nil Raw parameters to sanitize
+---@return PlayerOne.SoundParams Sanitized parameters
 local function sanitize_params(params)
 	if not params then
 		return {}
@@ -153,7 +153,7 @@ local function sanitize_json_params(json_params)
 end
 
 ---Process and validate sound parameters before playing
----@param params SoundParams|SoundParams[]|string Sound parameters to process
+---@param params PlayerOne.SoundParams|PlayerOne.SoundParams[]|string Sound parameters to process
 ---@param callback function Function to call with processed parameters
 ---@return any Result from the callback
 local function process_sound_params(params, callback)
@@ -202,7 +202,7 @@ end
 
 ---Create autocommands for sound events
 ---@param autocmd string|string[] Neovim autocommand event(s)
----@param sound SoundParams|SoundParams[] Sound(s) to play
+---@param sound PlayerOne.SoundParams|PlayerOne.SoundParams[] Sound(s) to play
 ---@param callback? PlayCallback How to play the sound
 function M._create_autocmds(autocmd, sound, callback)
 	vim.api.nvim_create_autocmd(autocmd, {
@@ -239,7 +239,7 @@ function M.clear_autocmds()
 end
 
 ---Load a sound theme
----@param theme? string|PlayerOneTheme Theme name or custom theme table
+---@param theme? string|PlayerOne.Theme Theme name or custom theme table
 function M.load_theme(theme)
 	if theme == "default" or not theme then
 		theme = State.curr_theme
@@ -273,21 +273,21 @@ function M.load_theme(theme)
 end
 
 ---Play a sound immediately
----@param params SoundParams|SoundParams[]|string Sound parameters
+---@param params PlayerOne.SoundParams|PlayerOne.SoundParams[]|string Sound parameters
 ---@return any Result from sound playback
 function M.play(params)
 	return process_sound_params(params, Lib.play)
 end
 
 ---Queue a sound to play after current sounds
----@param params SoundParams|SoundParams[]|string Sound parameters
+---@param params PlayerOne.SoundParams|PlayerOne.SoundParams[]|string Sound parameters
 ---@return any Result from sound queueing
 function M.append(params)
 	return process_sound_params(params, Lib.append)
 end
 
 ---Play a sound and wait for completion
----@param params SoundParams|SoundParams[]|string Sound parameters
+---@param params PlayerOne.SoundParams|PlayerOne.SoundParams[]|string Sound parameters
 ---@return any Result from async sound playback
 function M.play_async(params)
 	return process_sound_params(params, Lib.play_async)

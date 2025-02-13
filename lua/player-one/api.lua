@@ -18,7 +18,7 @@ local function handle_error(ok, err)
 end
 
 ---Play a sound immediately, interrupting any currently playing sounds
----@param params SoundParams Sound parameters
+---@param params PlayerOne.SoundParams Sound parameters
 ---@return boolean|nil success Whether the sound was played successfully
 function M.play(params)
 	if not State.is_enabled then
@@ -29,7 +29,7 @@ function M.play(params)
 end
 
 ---Queue a sound to play after current sounds finish
----@param params SoundParams Sound parameters
+---@param params PlayerOne.SoundParams Sound parameters
 ---@return boolean|nil success Whether the sound was queued successfully
 function M.append(params)
 	if not State.is_enabled then
@@ -40,7 +40,7 @@ function M.append(params)
 end
 
 ---Play a sound and wait for it to complete
----@param params SoundParams Sound parameters
+---@param params PlayerOne.SoundParams Sound parameters
 ---@return boolean|nil success Whether the sound was played successfully
 function M.play_async(params)
 	if not State.is_enabled then
@@ -61,7 +61,7 @@ function M.stop()
 end
 
 ---Load a sound theme
----@param theme string|PlayerOneTheme|nil Theme name or custom theme table
+---@param theme string|PlayerOne.Theme|nil Theme name or custom theme table
 ---@return boolean|nil success Whether the theme was loaded successfully
 function M.load_theme(theme)
 	if not State.is_enabled then

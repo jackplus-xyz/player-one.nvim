@@ -23,7 +23,7 @@ end
 
 M.setup()
 
----@type PlayerOneTheme
+---@type PlayerOne.Theme
 return {
 	{
 		event = "VimEnter",
@@ -82,7 +82,7 @@ return {
 			end, 1000)
 		end,
 	},
-	--- @type Sound
+	--- @type PlayerOne.Sound
 	{
 		event = "VimLeavePre",
 		sound = {
@@ -109,7 +109,7 @@ return {
 			Utils.play_async(sound)
 		end,
 	},
-	--- @type Sound
+	--- @type PlayerOne.Sound
 	{
 		event = "BufWritePost",
 		sound = {
@@ -134,7 +134,7 @@ return {
 		},
 		callback = "append",
 	},
-	--- @type Sound
+	--- @type PlayerOne.Sound
 	{
 		event = "TextChangedI",
 		sound = {
@@ -148,7 +148,7 @@ return {
 		},
 		callback = "play",
 	},
-	--- @type Sound
+	--- @type PlayerOne.Sound
 	{
 		event = "TextYankPost",
 		sound = {
@@ -173,7 +173,7 @@ return {
 		},
 		callback = "append",
 	},
-	--- @type Sound
+	--- @type PlayerOne.Sound
 	{
 		event = "CmdlineEnter",
 		sound = {
@@ -198,7 +198,7 @@ return {
 		},
 		callback = "append",
 	},
-	--- @type Sound
+	--- @type PlayerOne.Sound
 	{
 		event = "CmdlineChanged",
 		sound = {

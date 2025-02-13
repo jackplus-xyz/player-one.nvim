@@ -6,7 +6,7 @@ local State = require("player-one.state")
 
 local M = {}
 
----@type PlayerOneConfig
+---@type PlayerOne.Config
 local defaults = {
 	is_enabled = true,
 	min_interval = 0.05,
@@ -14,7 +14,7 @@ local defaults = {
 }
 
 --- Setup PlayerOne with the provided configuration
----@param options? PlayerOneConfig Configuration table to override defaults
+---@param options? PlayerOne.Config Configuration table to override defaults
 ---@usage [[
 --- # Basic setup with defaults
 --- require('player-one').setup()

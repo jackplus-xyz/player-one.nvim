@@ -5,12 +5,12 @@
 local Config = require("player-one.config")
 
 ---@class PlayerOne
----@field setup fun(options?: PlayerOneConfig): PlayerOne
----@field play fun(sound: SoundParams)
----@field play_async fun(sound: SoundParams)
----@field append fun(sound: SoundParams)
+---@field setup fun(options?: PlayerOne.Config): PlayerOne
+---@field play fun(sound: PlayerOne.SoundParams)
+---@field play_async fun(sound: PlayerOne.SoundParams)
+---@field append fun(sound: PlayerOne.SoundParams)
 ---@field stop fun()
----@field load_theme fun(theme: string|PlayerOneTheme)
+---@field load_theme fun(theme: string|PlayerOne.Theme)
 ---@field enable fun()
 ---@field disable fun()
 ---@field toggle fun()

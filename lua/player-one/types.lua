@@ -5,7 +5,7 @@
 ---| 3 # Noise wave
 ---| 4 # Triangle wave
 
----@class SoundParams
+---@class PlayerOne.SoundParams
 ---@field wave_type? WaveType Wave type (default: 0 square)
 ---@field base_freq? number Base frequency in Hz (default: 440)
 ---@field freq_limit? number Minimum frequency during slides in Hz
@@ -35,16 +35,16 @@
 ---| "play" # Play immediately, interrupting current sound
 ---| "append" # Queue sound to play after current sounds
 ---| "play_async" # Play and wait for completion
----| fun(sound: SoundParams): any # Custom callback function
+---| fun(sound: PlayerOne.SoundParams): any # Custom callback function
 
----@class Sound
+---@class PlayerOne.Sound
 ---@field event string Neovim event name that triggers the sound
----@field sound SoundParams|SoundParams[] Single sound or sequence of sounds to play
+---@field sound PlayerOne.SoundParams|PlayerOne.SoundParams[] Single sound or sequence of sounds to play
 ---@field callback? PlayCallback How to play the sound (default: "play")
 
----@class PlayerOneTheme Sound[] Array of sound configurations
+---@class PlayerOne.Theme PlayerOne.Sound[] Array of sound configurations
 
----@class PlayerOneConfig
+---@class PlayerOne.Config
 ---@field is_enabled boolean Whether the plugin is enabled (default: true)
----@field theme string|PlayerOneTheme Theme name or custom sounds table (default: "chiptune")
+---@field theme string|PlayerOne.Theme Theme name or custom sounds table (default: "chiptune")
 ---@field min_interval number Minimum interval between sounds in seconds (default: 0.05)
