@@ -1,3 +1,8 @@
+--- @brief Modern synthesizer-style sound theme with rich harmonics and filtering
+--- Each sound uses square waves (wave_type = 1) with careful duty cycle and
+--- low-pass filter settings to create a warm, analog synth feeling.
+--- The theme features multi-note chords for events like VimEnter and carefully
+--- tuned envelope settings for responsive feedback.
 local Utils = require("player-one.utils")
 
 local is_cursormoved_enabled = false
