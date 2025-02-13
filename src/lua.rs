@@ -1,8 +1,6 @@
 use crate::player::Player;
 use crate::sound::SoundParams;
 use mlua::prelude::*;
-use std::fs::OpenOptions;
-use std::io::Write;
 use std::sync::Arc;
 
 unsafe impl Send for Player {}
@@ -13,21 +11,8 @@ pub fn create_lua_module(lua: &Lua) -> LuaResult<LuaTable> {
     let player = Arc::new(player);
     let exports = lua.create_table()?;
 
-    // Debug Logging
-    let mut file = OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open("lua_module.log")
-        .unwrap();
-
-    writeln!(
-        file,
-        "Creating Lua module at: {:?}",
-        std::time::SystemTime::now()
-    )
-    .unwrap();
-
     register_play(lua, &exports, player.clone())?;
+    register_append(lua, &exports, player.clone())?;
     register_play_async(lua, &exports, player.clone())?;
     register_play_preset(lua, &exports, player.clone())?;
     register_stop(lua, &exports, player)?;
@@ -41,6 +26,17 @@ fn register_play(lua: &Lua, exports: &LuaTable, player: Arc<Player>) -> LuaResul
         lua.create_function(move |_, params: SoundParams| {
             player
                 .play(params)
+                .map_err(|e| mlua::Error::external(e.to_string()))
+        })?,
+    )
+}
+
+fn register_append(lua: &Lua, exports: &LuaTable, player: Arc<Player>) -> LuaResult<()> {
+    exports.set(
+        "append",
+        lua.create_function(move |_, params: SoundParams| {
+            player
+                .append(params)
                 .map_err(|e| mlua::Error::external(e.to_string()))
         })?,
     )

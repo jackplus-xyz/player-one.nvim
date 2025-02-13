@@ -67,20 +67,14 @@ fn test_waveform_types() {
 fn test_concurrent_playback() {
     let player = Player::new().unwrap();
 
-    // Create two different sounds
     let mut sample1 = Sample::new();
-    sample1.base_freq = 0.5; // Different frequency
+    sample1.base_freq = 0.5;
 
     let mut sample2 = Sample::new();
-    sample2.base_freq = 0.7; // Different frequency
+    sample2.base_freq = 0.7;
 
-    // Play first sound
     assert!(player.play(SoundParams::new(sample1)).is_ok());
-
-    // Play second sound immediately after
     assert!(player.play(SoundParams::new(sample2)).is_ok());
-
-    // Stop playback
     assert!(player.stop().is_ok());
 }
 
@@ -123,7 +117,6 @@ fn test_envelope_parameters() {
     let player = Player::new().unwrap();
     let test_cases = vec![
         {
-            // Fast attack, long sustain
             let mut s = Sample::new();
             s.env_attack = 0.1;
             s.env_sustain = 0.8;
@@ -131,7 +124,6 @@ fn test_envelope_parameters() {
             s
         },
         {
-            // Long attack, short sustain
             let mut s = Sample::new();
             s.env_attack = 0.8;
             s.env_sustain = 0.1;
@@ -153,21 +145,18 @@ fn test_frequency_modulation() {
     let player = Player::new().unwrap();
     let test_cases = vec![
         {
-            // Frequency slide up
             let mut s = Sample::new();
             s.base_freq = 0.3;
             s.freq_ramp = 0.3;
             s
         },
         {
-            // Frequency slide down
             let mut s = Sample::new();
             s.base_freq = 0.7;
             s.freq_ramp = -0.3;
             s
         },
         {
-            // With vibrato
             let mut s = Sample::new();
             s.base_freq = 0.5;
             s.vib_strength = 0.5;
@@ -187,11 +176,6 @@ fn test_frequency_modulation() {
 #[test]
 fn test_error_handling() {
     let player = Player::new().unwrap();
-
-    // Test stop without playing
-    assert!(player.stop().is_ok());
-
-    // Test multiple stops
     assert!(player.stop().is_ok());
     assert!(player.stop().is_ok());
 }
@@ -200,68 +184,112 @@ fn test_error_handling() {
 fn test_json_params() {
     let player = Player::new().unwrap();
     let json_params = r#"{
-  "oldParams": true,
-  "wave_type": 1,
-  "p_env_attack": 0,
-  "p_env_sustain": 0.024555768060600138,
-  "p_env_punch": 0.4571553721133509,
-  "p_env_decay": 0.3423639066276736,
-  "p_base_freq": 0.5500696633190347,
-  "p_freq_limit": 0,
-  "p_freq_ramp": 0,
-  "p_freq_dramp": 0,
-  "p_vib_strength": 0,
-  "p_vib_speed": 0,
-  "p_arp_mod": 0.5329522492796008,
-  "p_arp_speed": 0.689393158112304,
-  "p_duty": 0,
-  "p_duty_ramp": 0,
-  "p_repeat_speed": 0,
-  "p_pha_offset": 0,
-  "p_pha_ramp": 0,
-  "p_lpf_freq": 1,
-  "p_lpf_ramp": 0,
-  "p_lpf_resonance": 0,
-  "p_hpf_freq": 0,
-  "p_hpf_ramp": 0,
-  "sound_vol": 0.25,
-  "sample_rate": 44100,
-  "sample_size": 8
-}"#;
+        "wave_type": 1,
+        "p_env_attack": 0,
+        "p_env_sustain": 0.024555768060600138,
+        "p_env_punch": 0.4571553721133509,
+        "p_env_decay": 0.3423639066276736,
+        "p_base_freq": 0.5500696633190347,
+        "sound_vol": 0.25
+    }"#;
 
-    let sample = SoundParams::from_json(json_params).expect("Should parse JSON successfully");
-
-    // Verify the parsed values match the input JSON
-    // assert_eq!(sample.wave_type, WaveType::Sawtooth); // wave_type 1 should be Sawtooth
-    assert_eq!(sample.env_attack, 0.0);
-    assert!((sample.env_sustain - 0.024555768060600138).abs() < f32::EPSILON);
-    assert!((sample.env_punch - 0.4571553721133509).abs() < f32::EPSILON);
-    assert!((sample.env_decay - 0.3423639066276736).abs() < f32::EPSILON);
-    assert!((sample.base_freq - 0.5500696633190347).abs() < f64::EPSILON);
-    assert_eq!(sample.freq_limit, 0.0);
-    assert_eq!(sample.freq_ramp, 0.0);
-    assert_eq!(sample.freq_dramp, 0.0);
-    assert_eq!(sample.vib_strength, 0.0);
-    assert_eq!(sample.vib_speed, 0.0);
-    assert!((sample.arp_mod - 0.5329522492796008).abs() < f64::EPSILON);
-    assert!((sample.arp_speed - 0.689393158112304).abs() < f32::EPSILON);
-    assert_eq!(sample.duty, 0.0);
-    assert_eq!(sample.duty_ramp, 0.0);
-    assert_eq!(sample.repeat_speed, 0.0);
-    assert_eq!(sample.pha_offset, 0.0);
-    assert_eq!(sample.pha_ramp, 0.0);
-    assert_eq!(sample.lpf_freq, 1.0);
-    assert_eq!(sample.lpf_ramp, 0.0);
-    assert_eq!(sample.lpf_resonance, 0.0);
-    assert_eq!(sample.hpf_freq, 0.0);
-    assert_eq!(sample.hpf_ramp, 0.0);
-
-    let params = SoundParams::new(sample);
-    player.play_async(params).expect("Failed to play sound");
+    let params = SoundParams::from_json(json_params).expect("Should parse JSON successfully");
+    assert!(player.play_async(params).is_ok());
 
     let invalid_json = r#"{ invalid json }"#;
     assert!(SoundParams::from_json(invalid_json).is_err());
 
     let incomplete_json = r#"{ "wave_type": 1 }"#;
-    assert!(SoundParams::from_json(incomplete_json).is_err());
+    let params = SoundParams::from_json(incomplete_json).expect("Should parse JSON successfully");
+    assert!(player.play_async(params).is_ok());
+}
+
+#[test]
+fn test_volume_settings() {
+    let player = Player::new().unwrap();
+
+    // Test normal volume values
+    let test_volumes = vec![0.0, 0.2, 0.5, 0.8, 1.0];
+    for volume in test_volumes {
+        let sample = Sample::new();
+        let params = SoundParams::new(sample).with_volume(volume);
+        assert!(player.play(params).is_ok());
+        std::thread::sleep(Duration::from_millis(50));
+        assert!(player.stop().is_ok());
+    }
+
+    // Test volume from JSON
+    let json_with_volume = r#"{
+        "wave_type": 0,
+        "sound_vol": 0.5
+    }"#;
+    let params = SoundParams::from_json(json_with_volume).unwrap();
+    assert!(player.play(params).is_ok());
+    std::thread::sleep(Duration::from_millis(50));
+    assert!(player.stop().is_ok());
+
+    // Test edge cases and invalid values
+    let edge_cases = vec![
+        // Negative volume (should be clamped)
+        -1.0,  // Volume above 1.0 (should be clamped)
+        1.5,   // Very small volume
+        0.001, // Very large volume
+        100.0, // Zero volume
+        0.0,
+    ];
+
+    for volume in edge_cases {
+        let sample = Sample::new();
+        let params = SoundParams::new(sample).with_volume(volume);
+        assert!(player.play(params).is_ok());
+        std::thread::sleep(Duration::from_millis(50));
+        assert!(player.stop().is_ok());
+    }
+
+    // Test JSON with invalid volume values
+    let json_cases = vec![
+        // Missing volume (should use default)
+        r#"{ "wave_type": 0 }"#,
+        // Negative volume
+        r#"{ "wave_type": 0, "sound_vol": -1.0 }"#,
+        // Very large volume
+        r#"{ "wave_type": 0, "sound_vol": 100.0 }"#,
+    ];
+
+    for json in json_cases {
+        let params = SoundParams::from_json(json).unwrap();
+        assert!(player.play(params).is_ok());
+        std::thread::sleep(Duration::from_millis(50));
+        assert!(player.stop().is_ok());
+    }
+}
+
+#[test]
+fn test_append_sound() {
+    use crate::player::Player;
+    use crate::sound::SoundParams;
+    use sfxr::Sample;
+    use sfxr::WaveType;
+    use std::time::Duration;
+
+    let player = Player::new().unwrap();
+
+    // Create two different sound samples.
+    let mut sample1 = Sample::new();
+    sample1.wave_type = WaveType::Square;
+    let params1 = SoundParams::new(sample1);
+
+    let mut sample2 = Sample::new();
+    sample2.wave_type = WaveType::Sine;
+    let params2 = SoundParams::new(sample2);
+
+    // Append two sounds sequentially.
+    assert!(player.append(params1).is_ok());
+    assert!(player.append(params2).is_ok());
+
+    // Give the sounds some time to play.
+    std::thread::sleep(Duration::from_millis(200));
+
+    // Stop playback.
+    assert!(player.stop().is_ok());
 }

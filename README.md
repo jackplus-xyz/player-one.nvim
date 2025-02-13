@@ -34,15 +34,30 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 `player-one.nvim` comes with the following default configuration:
 
 ```lua
-{}
+{
+  is_enabled = true,  -- Whether to enable the plugin when loaded
+	theme = "chiptune", -- Whether to use one of the preset sound packs, set it to "none" or false to disable.
+                      -- Available options: "chiptune", "crystal", "synth"
+                      -- The preset sound packs are designed to provide a pleasant out-of-the-box user experience
+                      -- and give a general idea of what the plugin can do.
+                      -- They are therefore minimalistic and simple. You can create your own sound packs to better suit your needs.
+}
 ```
+
+### Themes
+
+Themes are predefined sound profiles—similar to colorschemes—that let you quickly experience what the plugin has to offer. Each theme is designed to be minimalistic and uniquely distinctive. The available themes are:
+
+- `chiptune`: the default theme featuring nostalgic 8-bit sounds reminiscent of classic video games.
+- `synth`: a theme delivering modern synthesizer sounds with smooth tones and electronic effects (although my cats aren’t fans).
+- `crytstl`:
 
 ### Custom Sounds
 
 You can add new sounds by:
 
-1. Creating a table
-2. Use a json string generated from [jsfxr - 8 bit sound maker and online sfx generator](https://sfxr.me/).
+- Creating a table
+- Use a json string generated from [jsfxr - 8 bit sound maker and online sfx generator](https://sfxr.me/).
 
 Note that the json string uses normalized value while the table uses real units.
 
@@ -191,6 +206,14 @@ Or a color scheme with vibrant colors on dark background:
 ### Font with Retro Look
 
 Try to use a font that looks like it's from the past.
+
+### Play soundtracks from games you love
+
+This may improve your productity or may make you shed tears of nostalgia. Some awesome soundtracks to try:
+
+- Little Root Town from Pokemon Ruby/Sapphire/Emerald
+- Running Through the Cyber World from Mega Man Battle Network
+- Main Theme from The Legend of Zelda
 
 ## Credits
 
