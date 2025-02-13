@@ -1,8 +1,27 @@
 --- @brief Chiptune-style sound module that maps musical notes to sound effects
 --- Each sound is generated from a base musical note to create an 8-bit/retro feel
 local Utils = require("player-one.utils")
+local State = require("player-one.state")
 
-local is_cursormoved_enabled = false
+local M = {}
+
+local function setup_cursormoved()
+	if State._is_cursormoved_enabled then
+		Utils._create_autocmds("CursorMoved", {
+			wave_type = 1,
+			base_freq = 440.0,
+			env_attack = 0.0,
+			env_sustain = 0.001,
+			env_decay = 0.05,
+		})
+	end
+end
+
+function M.setup()
+	setup_cursormoved()
+end
+
+M.setup()
 
 return {
 	{
@@ -15,26 +34,10 @@ return {
 		},
 		callback = function(sound)
 			Utils.append(sound)
-
 			vim.defer_fn(function()
-				is_cursormoved_enabled = true
+				State._is_cursormoved_enabled = true
+				setup_cursormoved()
 			end, 1000)
-		end,
-	},
-	{
-		event = "CursorMoved",
-		sound = {
-			wave_type = 1,
-			base_freq = 440.0,
-			env_attack = 0.0,
-			env_sustain = 0.001,
-			env_decay = 0.05,
-		},
-		callback = function(sound)
-			if not is_cursormoved_enabled then
-				return
-			end
-			Utils.play(sound)
 		end,
 	},
 	{

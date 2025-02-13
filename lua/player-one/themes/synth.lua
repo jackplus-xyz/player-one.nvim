@@ -3,11 +3,33 @@
 --- low-pass filter settings to create a warm, analog synth feeling.
 --- The theme features multi-note chords for events like VimEnter and carefully
 --- tuned envelope settings for responsive feedback.
+
 local Utils = require("player-one.utils")
+local State = require("player-one.state")
 
-local is_cursormoved_enabled = false
+local M = {}
 
+local function setup_cursormoved()
+	Utils._create_autocmds("CursorMoved", {
+		wave_type = 1,
+		base_freq = 277.18,
+		env_attack = 0.001,
+		env_sustain = 0.01,
+		env_decay = 0.08,
+		duty = 0.3,
+		lpf_freq = 2000,
+	})
+end
+
+function M.setup()
+	setup_cursormoved()
+end
+
+M.setup()
+
+--- @type PlayerOneTheme
 return {
+	--- @type Sound
 	{
 		event = "VimEnter",
 		sound = {
@@ -60,28 +82,12 @@ return {
 		callback = function(sound)
 			Utils.append(sound)
 			vim.defer_fn(function()
-				is_cursormoved_enabled = true
+				State._is_cursormoved_enabled = true
+				setup_cursormoved()
 			end, 1000)
 		end,
 	},
-	{
-		event = "CursorMoved",
-		sound = {
-			wave_type = 1,
-			base_freq = 277.18,
-			env_attack = 0.001,
-			env_sustain = 0.01,
-			env_decay = 0.08,
-			duty = 0.3,
-			lpf_freq = 2000,
-		},
-		callback = function(sound)
-			if not is_cursormoved_enabled then
-				return
-			end
-			Utils.play(sound)
-		end,
-	},
+	--- @type Sound
 	{
 		event = "VimLeavePre",
 		sound = {
@@ -108,6 +114,7 @@ return {
 			Utils.play_async(sound)
 		end,
 	},
+	--- @type Sound
 	{
 		event = "BufWritePost",
 		sound = {
@@ -132,6 +139,7 @@ return {
 		},
 		callback = "append",
 	},
+	--- @type Sound
 	{
 		event = "TextChangedI",
 		sound = {
@@ -145,6 +153,7 @@ return {
 		},
 		callback = "play",
 	},
+	--- @type Sound
 	{
 		event = "TextYankPost",
 		sound = {
@@ -169,6 +178,7 @@ return {
 		},
 		callback = "append",
 	},
+	--- @type Sound
 	{
 		event = "CmdlineEnter",
 		sound = {
@@ -193,6 +203,7 @@ return {
 		},
 		callback = "append",
 	},
+	--- @type Sound
 	{
 		event = "CmdlineChanged",
 		sound = {

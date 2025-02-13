@@ -154,7 +154,7 @@ local function process_sound_params(params, callback)
 	error(string.format("Invalid sound params type: %s", type(params)))
 end
 
-local function create_autocmds(autocmd, sound, callback)
+function M._create_autocmds(autocmd, sound, callback)
 	vim.api.nvim_create_autocmd(autocmd, {
 		group = State.group,
 		callback = function()
@@ -215,7 +215,7 @@ function M.load_theme(theme)
 		if not v.sound then
 			error(string.format("Missing 'sound' in sound configuration at index %d", i))
 		end
-		create_autocmds(v.event, v.sound, v.callback)
+		M._create_autocmds(v.event, v.sound, v.callback)
 	end
 end
 
