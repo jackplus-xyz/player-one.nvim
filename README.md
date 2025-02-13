@@ -2,6 +2,8 @@
 
 A Neovim plugin that adds retro gaming charm to your coding experience with 8-bit sound effects on keystrokes.
 
+<img width="1280" alt="banner" src="https://github.com/user-attachments/assets/dae84cd4-a031-43a2-9f42-c3ef494c1af0" />
+
 ## Features
 
 ## Requirements
