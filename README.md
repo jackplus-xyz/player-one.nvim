@@ -4,7 +4,18 @@ A Neovim plugin that adds retro gaming charm to your coding experience with 8-bi
 
 <img width="1280" alt="banner" src="https://github.com/user-attachments/assets/dae84cd4-a031-43a2-9f42-c3ef494c1af0" />
 
+## Demo
+
+## Overview
+
+`player-one.nvim` brings audio feedback to your editing experience by playing retro-style sound effects on Neovim events. Built with sfxr sound synthesis, it generates 8-bit sounds without on the fly without any audio files.
+
 ## Features
+
+- Built-in sound themes
+- Event-based sound triggers
+- Performance focused
+- Extensive customization
 
 ## Requirements
 
@@ -18,16 +29,30 @@ A Neovim plugin that adds retro gaming charm to your coding experience with 8-bi
 | Linux            | ⚠️     | Not tested                   |
 | Windows          | ⚠️     | Not tested                   |
 
+## Quickstart
+
+1. Install with your favorite package manager:
+
+2. Restart NeoVim and you should now hear:
+
+   - A startup melody when Neovim launches
+   - Typing sounds in insert mode
+   - Save confirmation sounds
+   - And more!
+
 ## Installation
 
 Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 
 ```lua
 {
-    "jackplus-xyz/player-one.nvim",
-    opts = {
-        -- Add your configuration here
-    }
+  "jackplus-xyz/player-one.nvim",
+  ---@type PlayerOne.Config
+  opts = {
+    -- your configuration comes here
+    -- or leave it empty to use the default settings
+    -- refer to the configuration section below
+  }
 }
 ```
 
@@ -36,148 +61,457 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 `player-one.nvim` comes with the following default configuration:
 
 ```lua
+---@class PlayerOne.Config
 {
-  is_enabled = true,  -- Whether to enable the plugin when loaded
-	theme = "chiptune", -- Whether to use one of the preset sound packs, set it to "none" or false to disable.
-                      -- Available options: "chiptune", "crystal", "synth"
-                      -- The preset sound packs are designed to provide a pleasant out-of-the-box user experience
-                      -- and give a general idea of what the plugin can do.
-                      -- They are therefore minimalistic and simple. You can create your own sound packs to better suit your needs.
+  ---@type boolean Whether the sound theme is enabled
+  is_enabled = true,
+
+  ---@type number Minimum interval between sounds in seconds
+  min_interval = 0.05,
+
+  ---@type PlayerOne.Theme|string Either a preset name or custom sounds table
+  theme = "chiptune",
 }
 ```
 
-### Themes
+### Theme
 
-Themes are predefined sound profiles—similar to colorschemes—that let you quickly experience what the plugin has to offer. Each theme is designed to be minimalistic and uniquely distinctive. The available themes are:
+A Theme is a collection of sounds. Just like how colorschemes map colors to text objects, themes map sound effects to Neovim events.
 
-- `chiptune`: the default theme featuring nostalgic 8-bit sounds reminiscent of classic video games.
-- `synth`: a theme delivering modern synthesizer sounds with smooth tones and electronic effects (although my cats aren’t fans).
-- `crytstl`:
+The plugin comes with three built-in themes:
 
-### Custom Sounds
+- `chiptune`: Classic 8-bit game sounds (default)
+- `crystal`: Clear, crystalline sounds with sparkling tones
+- `synth`: Modern synthesizer sounds with smooth tones
 
-You can add new sounds by:
+When an event occurs (like saving a file or moving the cursor), the theme plays its corresponding sound effect.
 
-- Creating a table
-- Use a json string generated from [jsfxr - 8 bit sound maker and online sfx generator](https://sfxr.me/).
+And of course, you can create your own theme to customize exactly how your editor sounds.
 
-Note that the json string uses normalized value while the table uses real units.
+#### Creating a Theme
 
-Here's the units used in the table:
+```lua
+---@type PlayerOne.Theme
+local my_theme = {
+  -- Play a welcome jingle when Vim startup
+  ---@type PlayerOne.Sound
+  {
+    event = "VimEnter",
+    sound = {
+      { wave_type = 1, base_freq = 523.25, env_decay = 0.15 },
+      { wave_type = 1, base_freq = 659.25, env_decay = 0.15 },
+      { wave_type = 1, base_freq = 783.99, env_decay = 0.15 },
+    },
+    callback = "append" -- Play notes sequentially
+  },
 
-| Parameter     | Unit     | Note                                                   |
-| ------------- | -------- | ------------------------------------------------------ |
-| wave_type     | int      | 0: Square, 1: Sawtooth, 2: Sine, 3: Noise, 4: Triangle |
-| env_attack    | sec      |                                                        |
-| env_sustain   | sec      |                                                        |
-| env_punch     | +%       |                                                        |
-| env_decay     | sec      |                                                        |
-| base_freq     | Hz       |                                                        |
-| freq_limit    | Hz       |                                                        |
-| freq_ramp     | 8va/sec  |                                                        |
-| freq_dramp    | 8va/s^2  |                                                        |
-| vib_strength  | ± %      |                                                        |
-| vib_speed     | Hz       |                                                        |
-| p_arp_mod     | mult     |                                                        |
-| p_arp_speed   | sec      |                                                        |
-| duty          | %        |                                                        |
-| duty_ramp     | %/sec    |                                                        |
-| repeat_speed  | Hz       |                                                        |
-| pha_offset    | msec     |                                                        |
-| pha_ramp      | msec/sec |                                                        |
-| lpf_freq      | Hz       |                                                        |
-| lpf_ramp      | ^sec     |                                                        |
-| lpf_resonance | %        |                                                        |
-| hpf_freq      | Hz       |                                                        |
-| hpf_ramp      | ^sec     |                                                        |
+  -- Trigger a Short blip while typing
+  {
+    event = "TextChangedI",
+    sound = {
+      wave_type = 1,
+      base_freq = 880.0,
+      env_attack = 0.0,
+      env_sustain = 0.001,
+      env_decay = 0.05,
+    },
+    callback = "play"   -- Play immediately
+  },
 
-#### Default Value for a sound
+  -- Play a goodbye chime when exiting Vim
+  {
+    event = "VimLeavePre",
+    sound = {
+      { wave_type = 2, base_freq = 587.33, env_decay = 0.15 },
+      { wave_type = 2, base_freq = 880.00, env_decay = 0.15 },
+    },
+    callback = "play_async" -- Play and wait for completion
+  }
+}
 
-When a value is not provided, it will fallback to the default value.
+-- Apply the theme
+require("player-one").setup({
+  theme = my_theme
+})
 
-| Json Parameter Name | Default Value | Lua Table Parameter Name | Default Value |
-| ------------------- | ------------- | ------------------------ | ------------- |
-| wave_type           | 0 (Square)    | wave_type                | 0 (Square)    |
-| p_env_attack        | 0.4           | env_attack               | 0.3628        |
-| p_env_sustain       | 0.1           | env_sustain              | 0.02268       |
-| p_env_punch         | 0.0           | env_punch                | 0.0           |
-| p_env_decay         | 0.5           | env_decay                | 0.5669        |
-| p_base_freq         | 0.3           | base_freq                | 321.0         |
-| p_freq_limit        | 0.0           | freq_limit               | 0.0           |
-| p_freq_ramp         | 0.0           | freq_ramp                | 0.0           |
-| p_freq_dramp        | 0.0           | freq_dramp               | 0.0           |
-| p_vib_strength      | 0.0           | vib_strength             | 0.0           |
-| p_vib_speed         | 0.0           | vib_speed                | 0.0           |
-| p_arp_mod           | 0.0           | p_arp_mod                | 0.0           |
-| p_arp_speed         | 0.0           | p_arp_speed              | 0.0           |
-| p_duty              | 0.0           | duty                     | 50.0          |
-| p_duty_ramp         | 0.0           | duty_ramp                | 0.0           |
-| p_repeat_speed      | 0.0           | repeat_speed             | 0.0           |
-| p_pha_offset        | 0.0           | pha_offset               | 0.0           |
-| p_pha_ramp          | 0.0           | pha_ramp                 | 0.0           |
-| p_lpf_freq          | 1.0           | lpf_freq                 | 0.0           |
-| p_lpf_ramp          | 0.0           | lpf_ramp                 | 0.0           |
-| p_lpf_resonance     | 0.0           | lpf_resonance            | 45.0          |
-| p_hpf_freq          | 0.0           | hpf_freq                 | 0.0           |
-| p_hpf_ramp          | 0.0           | hpf_ramp                 | 0.0           |
+-- Or switch themes at runtime
+require("player-one").load_theme(my_theme)
 
-#### Examples
+```
 
-##### Use a table
+### Sound
+
+A sound is consist of `event`, `sound` and `callback`
+
+```lua
+---@class PlayerOne.Sound
+{
+  ---@type string Event name that triggers the sound (see `:h events`)
+  event = "",
+
+  ---@type PlayerOne.SoundParams|PlayerOne.SoundParams[] Sound parameters
+  sound = {},
+
+  ---@type string|function Callback to execute when sound plays
+  ---@default "play"
+  callback = "play",
+}
+```
+
+You can create sounds in two ways:
+
+1. Using a Lua table with real units
+2. Using a JSON string from [jsfxr](https://sfxr.me/)
+
+#### Using Lua Table
 
 ```lua
 local coin = {
-    wave_type = 1,
-    env_sustain = 0.001367,
-    env_punch = 45.72,
-    env_decay = 0.2658,
-    base_freq = 1071.0,
-    arp_mod = 1.343,
-    arp_speed = 0.04447,
-    duty = 50.0,
-    lpf_ramp = 1.0,
-    lpf_resonance = 45.0,
+    wave_type = 1,        -- Sawtooth wave
+    env_sustain = 0.001,  -- 1ms sustain
+    env_punch = 45.72,    -- 45.72% punch
+    env_decay = 0.26,     -- 260ms decay
+    base_freq = 1071.0,   -- 1071Hz (approximately C6)
+    arp_mod = 1.343,      -- Frequency multiplier for arpeggio
+    arp_speed = 0.044,    -- Arpeggio speed in seconds
+    duty = 50.0,          -- Square wave duty cycle
+    lpf_ramp = 1.0,       -- Linear increase in filter cutoff
+    lpf_resonance = 45.0, -- Filter resonance percentage
 }
 
 require("player-one").play(coin)
 ```
 
-##### Use a json
+#### Using JSON
 
 ```lua
 local coin = [[{
-        "oldParams": true,
-        "wave_type": 1,
-        "p_env_attack": 0,
-        "p_env_sustain": 0.024555768060600138,
-        "p_env_punch": 0.4571553721133509,
-        "p_env_decay": 0.3423639066276736,
-        "p_base_freq": 0.5500696633190347,
-        "p_freq_limit": 0,
-        "p_freq_ramp": 0,
-        "p_freq_dramp": 0,
-        "p_vib_strength": 0,
-        "p_vib_speed": 0,
-        "p_arp_mod": 0.5329522492796008,
-        "p_arp_speed": 0.689393158112304,
-        "p_duty": 0,
-        "p_duty_ramp": 0,
-        "p_repeat_speed": 0,
-        "p_pha_offset": 0,
-        "p_pha_ramp": 0,
-        "p_lpf_freq": 1,
-        "p_lpf_ramp": 0,
-        "p_lpf_resonance": 0,
-        "p_hpf_freq": 0,
-        "p_hpf_ramp": 0,
-        "sound_vol": 0.25,
-        "sample_rate": 44100,
-        "sample_size": 8
+    "oldParams": true,
+    "wave_type": 1,
+    "p_env_attack": 0,
+    "p_env_sustain": 0.024,
+    "p_env_punch": 0.457,
+    "p_env_decay": 0.342,
+    "p_base_freq": 0.550,
+    "p_arp_mod": 0.532,
+    "p_arp_speed": 0.689,
+    "sound_vol": 0.25
 }]]
 
 require("player-one").play(coin)
-
 ```
+
+#### Sound Parameters
+
+> [!NOTE]
+>
+> 1. The `json` params has a prefix of `p_`
+> 2. The table uses real units while json uses normalized values (0.0-1.0)
+
+| Parameter     | Unit     | Description                                            | Default |
+| ------------- | -------- | ------------------------------------------------------ | ------- |
+| wave_type     | int      | 0: Square, 1: Sawtooth, 2: Sine, 3: Noise, 4: Triangle | 0       |
+| env_attack    | sec      | Time to reach peak volume                              | 0.3628  |
+| env_sustain   | sec      | Time to hold peak volume                               | 0.0227  |
+| env_punch     | +%       | Additional volume boost at the start                   | 0.0     |
+| env_decay     | sec      | Time to fade to silence                                | 0.5669  |
+| base_freq     | Hz       | Base frequency of the sound                            | 321.0   |
+| freq_limit    | Hz       | Minimum frequency during slides                        | 0.0     |
+| freq_ramp     | 8va/sec  | Frequency change over time (octaves per second)        | 0.0     |
+| freq_dramp    | 8va/s^2  | Change in frequency slide (octaves per second^2)       | 0.0     |
+| vib_strength  | ± %      | Vibrato depth                                          | 0.0     |
+| vib_speed     | Hz       | Vibrato frequency                                      | 0.0     |
+| arp_mod       | mult     | Frequency multiplier for arpeggio                      | 0.0     |
+| arp_speed     | sec      | Time between arpeggio notes                            | 0.0     |
+| duty          | %        | Square wave duty cycle (wave_type = 0 only)            | 50.0    |
+| duty_ramp     | %/sec    | Change in duty cycle over time                         | 0.0     |
+| repeat_speed  | Hz       | Sound repeat frequency                                 | 0.0     |
+| pha_offset    | msec     | Phaser offset                                          | 0.0     |
+| pha_ramp      | msec/sec | Change in phaser offset over time                      | 0.0     |
+| lpf_freq      | Hz       | Low-pass filter cutoff frequency                       | 0.0     |
+| lpf_ramp      | ^sec     | Change in filter cutoff over time                      | 0.0     |
+| lpf_resonance | %        | Filter resonance                                       | 45.0    |
+| hpf_freq      | Hz       | High-pass filter cutoff frequency                      | 0.0     |
+| hpf_ramp      | ^sec     | Change in high-pass filter cutoff over time            | 0.0     |
+
+#### Callbacks
+
+`player-one.nvim` provides three different ways to play sounds, each suited for different use cases.
+
+##### Play Modes Overview
+
+```lua
+local PlayerOne = require("player-one")
+
+-- Play immediately
+PlayerOne.play(sound)
+
+-- Queue sound
+PlayerOne.append(sound)
+
+-- Play and wait
+PlayerOne.play_async(sound)
+```
+
+##### `play(sound)`
+
+Plays the sound immediately, interrupting any currently playing sounds. Best for immediate feedback.
+
+```lua
+-- Simple beep when typing
+{
+  event = "TextChangedI",
+  sound = {
+    wave_type = 1,
+    base_freq = 440.0,
+    env_decay = 0.05,
+  },
+  callback = "play"  -- Immediate feedback
+}
+```
+
+```lua
+-- Play a C major chord (C4, E4, G4)
+{
+  event = "InsertEnter",
+  sound = {
+    -- C4 (261.63 Hz)
+    {
+      wave_type = 1,
+      base_freq = 261.63,
+      env_decay = 0.1,
+    },
+    -- E4 (329.63 Hz)
+    {
+      wave_type = 1,
+      base_freq = 329.63,
+      env_decay = 0.1,
+    },
+    -- G4 (392.00 Hz)
+    {
+      wave_type = 1,
+      base_freq = 392.00,
+      env_decay = 0.1,
+    }
+  },
+  callback = "play"  -- All notes play simultaneously
+}
+```
+
+##### `append(sound)`
+
+Queues sounds to play sequentially. Perfect for creating melodies or sequences.
+
+```lua
+-- Startup melody with multiple notes
+{
+  event = "VimEnter",
+  sound = {
+    { wave_type = 1, base_freq = 523.25 },
+    { wave_type = 1, base_freq = 659.25 },
+    { wave_type = 1, base_freq = 783.99 },
+  },
+  callback = "append"  -- Notes play in sequence
+}
+```
+
+##### `play_async(sound)`
+
+Plays the sound and waits for it to complete before continuing. Useful for confirmations or alerts.
+
+```lua
+-- Save confirmation with chord
+{
+  event = "BufWritePost",
+  sound = {
+    { wave_type = 1, base_freq = 587.33 },
+    { wave_type = 1, base_freq = 880.00 },
+  },
+  callback = "play_async"  -- Wait for completion
+}
+```
+
+##### Comparison
+
+| Mode         | Interrupts Current | Queues Sounds | Blocks Execution |
+| ------------ | ------------------ | ------------- | ---------------- |
+| `play`       | ✅                 | ❌            | ❌               |
+| `append`     | ❌                 | ✅            | ❌               |
+| `play_async` | ✅                 | ✅            | ✅               |
+
+##### Use Cases
+
+- Use `play` for:
+
+  - Immediate feedback (typing, cursor movement)
+  - Single sound effects
+  - Overriding current sounds
+
+- Use `append` for:
+
+  - Musical sequences
+  - Multi-note melodies
+  - Sound effect combinations
+
+- Use `play_async` for:
+  - Confirmation sounds
+  - Operation completion alerts
+  - Synchronized audio feedback
+
+##### Example
+
+```lua
+local theme = {
+  -- Immediate feedback for typing
+  {
+    event = "TextChangedI",
+    sound = { wave_type = 1, base_freq = 440.0 },
+    callback = "play"
+  },
+
+  -- Musical sequence for startup
+  {
+    event = "VimEnter",
+    sound = {
+      { wave_type = 1, base_freq = 523.25 },
+      { wave_type = 1, base_freq = 659.25 },
+      { wave_type = 1, base_freq = 783.99 },
+    },
+    callback = "append"
+  },
+
+  -- Confirmation for save
+  {
+    event = "BufWritePost",
+    sound = {
+      { wave_type = 1, base_freq = 587.33 },
+      { wave_type = 1, base_freq = 880.00 },
+    },
+    callback = "play_async"
+  }
+}
+```
+
+##### Custom Callbacks
+
+In addition to the built-in callbacks (`"play"`, `"append"`, `"play_async"`), you can define custom callback functions for more complex sound behaviors.
+
+```lua
+local player_one = require("player-one")
+local utils = require("player-one.utils")
+
+---@type PlayerOne.Theme
+local theme = {
+  -- Example 1: Conditional Sound Based on Buffer Type
+  {
+    event = "BufWritePost",
+    sound = {
+      { wave_type = 1, base_freq = 587.33, env_decay = 0.15 }, -- D5
+      { wave_type = 1, base_freq = 880.00, env_decay = 0.15 }, -- A5
+    },
+    callback = function(sound)
+      -- Play different sounds for different file types
+      local ft = vim.bo.filetype
+      if ft == "lua" then
+        utils.append(sound)
+      elseif ft == "rust" then
+        utils.play_async(sound)
+      else
+        utils.play(sound)
+      end
+    end
+  },
+
+  -- Example 2: Dynamic Sound Parameters
+  {
+    event = "CursorMoved",
+    sound = {
+      wave_type = 1,
+      base_freq = 440.0,
+      env_decay = 0.05,
+    },
+    callback = function(sound)
+      -- Modify frequency based on cursor position
+      local pos = vim.api.nvim_win_get_cursor(0)
+      local line = pos[1]
+      local col = pos[2]
+
+      -- Adjust frequency based on position
+      sound.base_freq = 440.0 + (line % 12) * 50
+
+      -- Only play if enabled and after delay
+      if vim.g.player_one ~= false then
+        utils.play(sound)
+      end
+    end
+  },
+
+  -- Example 3: Sequential Sounds with Delay
+  {
+    event = "VimEnter",
+    sound = {
+      { wave_type = 1, base_freq = 523.25, env_decay = 0.15 }, -- C5
+      { wave_type = 1, base_freq = 659.25, env_decay = 0.15 }, -- E5
+      { wave_type = 1, base_freq = 783.99, env_decay = 0.15 }, -- G5
+    },
+    callback = function(sound)
+      -- Play startup sound after a delay
+      vim.defer_fn(function()
+        utils.append(sound)
+      end, 1000) -- 1 second delay
+    end
+  },
+
+  -- Example 4: Volume Based on Window Size
+  {
+    event = "VimResized",
+    sound = {
+      wave_type = 2,
+      base_freq = 440.0,
+      env_decay = 0.1,
+    },
+    callback = function(sound)
+      -- Adjust volume based on window width
+      local width = vim.api.nvim_win_get_width(0)
+      sound.sound_vol = math.min(width / 100, 1.0)
+      utils.play(sound)
+    end
+  }
+}
+
+-- Apply the theme
+player_one.setup({
+  theme = theme
+})
+```
+
+Custom callbacks give you full control over:
+
+- When and how sounds are played
+- Sound parameter modifications
+- Conditional playback logic
+- Integration with Neovim state
+- Complex sound sequences
+- Timing and delays
+
+Tips for Custom Callbacks:
+
+1. Use `utils.play()`, `utils.append()`, or `utils.play_async()` for sound playback
+2. Check `vim.g.player_one` for global enable state
+3. Modify sound parameters before playback
+4. Use `vim.defer_fn()` for delayed playback
+5. Access Neovim API for context-aware sounds
+
+## Usage
+
+### Commands
+
+| Command                  | Description                           |
+| ------------------------ | ------------------------------------- |
+| `:PlayerOneEnable`       | Enable sound theme                    |
+| `:PlayerOneDisable`      | Disable sound theme                   |
+| `:PlayerOneToggle`       | Toggle sound theme                    |
+| `:PlayerOneLoad {theme}` | Load a theme (chiptune/crystal/synth) |
 
 ## How it works
 
@@ -196,8 +530,8 @@ Use a color scheme with [base16](https://github.com/chriskempson/base16) colors 
 
 - [RRethy/base16-nvim](https://github.com/RRethy/base16-nvim): Neovim plugin for building a sync base16 colorscheme. Includes support for Treesitter and LSP highlight groups.
 
-> [!TIP]
-> My favorite is `base16-default-dark`.
+  > [!TIP]
+  > My favorite is `base16-default-dark`.
 
 Or a color scheme with vibrant colors on dark background:
 
