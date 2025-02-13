@@ -1,10 +1,49 @@
 local Lib = require("player-one.lib")
 local State = require("player-one.state")
 
+--- Sound utility functions for PlayerOne
+--- Provides core functionality for sound parameter validation, playback control, and event handling.
+---
+---@module 'player-one.utils'
+---
+---@usage
+--- local Utils = require("player-one.utils")
+---
+--- -- Basic sound playback
+--- Utils.play({
+---   wave_type = 1,
+---   base_freq = 440.0,
+---   env_decay = 0.1
+--- })
+---
+--- -- Playing multiple sounds in sequence
+--- Utils.append({
+---   { wave_type = 1, base_freq = 523.25 },
+---   { wave_type = 1, base_freq = 587.33 }
+--- })
+---
+--- -- Loading a custom theme
+--- Utils.load_theme({
+---   {
+---     event = "InsertEnter",
+---     sound = { wave_type = 1, base_freq = 440 }
+---   },
+---   {
+---     event = "InsertLeave",
+---     sound = { wave_type = 2, base_freq = 880 }
+---   }
+--- })
+---
+---@see player-one.lib
+---@see player-one.state
 local M = {}
 
+---@type number Time of last sound played (in milliseconds)
 local last_play_time = 0
 
+---Sanitize and validate sound parameters
+---@param params SoundParams|nil Raw parameters to sanitize
+---@return SoundParams Sanitized parameters
 local function sanitize_params(params)
 	if not params then
 		return {}
@@ -60,6 +99,9 @@ local function sanitize_params(params)
 	return sanitized
 end
 
+---Sanitize and validate JSON format sound parameters
+---@param json_params string JSON string containing sound parameters
+---@return string Sanitized JSON string
 local function sanitize_json_params(json_params)
 	local ok, params = pcall(vim.json.decode, json_params)
 	if not ok then
@@ -110,6 +152,10 @@ local function sanitize_json_params(json_params)
 	return vim.json.encode(params)
 end
 
+---Process and validate sound parameters before playing
+---@param params SoundParams|SoundParams[]|string Sound parameters to process
+---@param callback function Function to call with processed parameters
+---@return any Result from the callback
 local function process_sound_params(params, callback)
 	local min_interval = State.min_interval or 0
 	local current_time = vim.uv.now()
@@ -154,6 +200,10 @@ local function process_sound_params(params, callback)
 	error(string.format("Invalid sound params type: %s", type(params)))
 end
 
+---Create autocommands for sound events
+---@param autocmd string|string[] Neovim autocommand event(s)
+---@param sound SoundParams|SoundParams[] Sound(s) to play
+---@param callback? PlayCallback How to play the sound
 function M._create_autocmds(autocmd, sound, callback)
 	vim.api.nvim_create_autocmd(autocmd, {
 		group = State.group,
@@ -183,10 +233,13 @@ function M._create_autocmds(autocmd, sound, callback)
 	})
 end
 
+---Clear all plugin autocommands
 function M.clear_autocmds()
 	vim.api.nvim_clear_autocmds({ group = State.group })
 end
 
+---Load a sound theme
+---@param theme? string|PlayerOneTheme Theme name or custom theme table
 function M.load_theme(theme)
 	if theme == "default" or not theme then
 		theme = State.curr_theme
@@ -219,18 +272,29 @@ function M.load_theme(theme)
 	end
 end
 
+---Play a sound immediately
+---@param params SoundParams|SoundParams[]|string Sound parameters
+---@return any Result from sound playback
 function M.play(params)
 	return process_sound_params(params, Lib.play)
 end
 
+---Queue a sound to play after current sounds
+---@param params SoundParams|SoundParams[]|string Sound parameters
+---@return any Result from sound queueing
 function M.append(params)
 	return process_sound_params(params, Lib.append)
 end
 
+---Play a sound and wait for completion
+---@param params SoundParams|SoundParams[]|string Sound parameters
+---@return any Result from async sound playback
 function M.play_async(params)
 	return process_sound_params(params, Lib.play_async)
 end
 
+---Stop all currently playing sounds
+---@return any Result from stop operation
 function M.stop()
 	return Lib.stop()
 end
