@@ -36,7 +36,7 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 ```lua
 {
   is_enabled = true,  -- Whether to enable the plugin when loaded
-	theme = "chiptune",    -- Whether to use one of the preset sound packs, set it to "none" or false to disable.
+	theme = "chiptune", -- Whether to use one of the preset sound packs, set it to "none" or false to disable.
                       -- Available options: "chiptune", "crystal", "synth"
                       -- The preset sound packs are designed to provide a pleasant out-of-the-box user experience
                       -- and give a general idea of what the plugin can do.
@@ -44,12 +44,20 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 }
 ```
 
+### Themes
+
+Themes are predefined sound profiles—similar to colorschemes—that let you quickly experience what the plugin has to offer. Each theme is designed to be minimalistic and uniquely distinctive. The available themes are:
+
+- `chiptune`: the default theme featuring nostalgic 8-bit sounds reminiscent of classic video games.
+- `synth`: a theme delivering modern synthesizer sounds with smooth tones and electronic effects (although my cats aren’t fans).
+- `crytstl`:
+
 ### Custom Sounds
 
 You can add new sounds by:
 
-1. Creating a table
-2. Use a json string generated from [jsfxr - 8 bit sound maker and online sfx generator](https://sfxr.me/).
+- Creating a table
+- Use a json string generated from [jsfxr - 8 bit sound maker and online sfx generator](https://sfxr.me/).
 
 Note that the json string uses normalized value while the table uses real units.
 
