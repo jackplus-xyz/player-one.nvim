@@ -1,5 +1,5 @@
---- @brief Chiptune-style sound module that maps musical notes to sound effects
---- Each sound is generated from a base musical note to create an 8-bit/retro feel
+--- @brief Chiptune-style sound theme inspired by 8-bit game consoles
+
 local Utils = require("player-one.utils")
 local State = require("player-one.state")
 
@@ -23,6 +23,7 @@ end
 
 M.setup()
 
+---@type PlayerOneTheme
 return {
 	{
 		event = "VimEnter",

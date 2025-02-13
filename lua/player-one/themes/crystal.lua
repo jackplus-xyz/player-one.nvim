@@ -1,3 +1,5 @@
+--- @brief Crystal-style sound theme with pure sine waves and ethereal tones
+
 local Utils = require("player-one.utils")
 local State = require("player-one.state")
 
@@ -20,6 +22,7 @@ end
 
 M.setup()
 
+---@type PlayerOneTheme
 return {
 	{
 		event = "VimEnter",
