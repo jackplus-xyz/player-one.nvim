@@ -1,16 +1,17 @@
 [target.x86_64-unknown-linux-musl]
+env = { "CC_x86_64-unknown-linux-musl" = "musl-gcc", "CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_RUSTFLAGS" = "-C target-feature=+crt-static", "CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER" = "musl-gcc" }
 pre-build = [
   "export DEBIAN_FRONTEND=noninteractive",
   "apt-get update",
   "echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections",
+  "apt-get install -y --no-install-recommends build-essential",
   "apt-get install -y --no-install-recommends libc6-dev",
-  "yes | apt-get install -y --no-install-recommends musl",
-  "yes | apt-get install -y --no-install-recommends musl-dev",
-  "yes | apt-get install -y --no-install-recommends musl-tools",
+  "yes | apt-get install -y --no-install-recommends musl musl-dev musl-tools",
   "apt-get install -y --no-install-recommends libasound2-dev",
 ]
 
 [target.aarch64-unknown-linux-musl]
+env = { "CC_aarch64-unknown-linux-musl" = "aarch64-linux-gnu-gcc", "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_RUSTFLAGS" = "-C target-feature=+crt-static", "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER" = "aarch64-linux-gnu-gcc" }
 pre-build = [
   "export DEBIAN_FRONTEND=noninteractive",
   "echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections",

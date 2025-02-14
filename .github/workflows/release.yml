@@ -59,6 +59,7 @@ jobs:
           rustup toolchain install nightly
           rustup default nightly
           rustup target add ${{ matrix.target }}
+          rustup component add rust-src
 
       - name: Build for Linux
         if: contains(matrix.os, 'ubuntu')
