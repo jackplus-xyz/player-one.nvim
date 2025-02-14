@@ -100,7 +100,8 @@ jobs:
           export RUSTFLAGS="-L $BREW_PREFIX/lib"
 
           # Build with explicit library path
-          cargo build --release --target ${{ matrix.target }} --features lua51
+          # cargo build --release --target ${{ matrix.target }} --features lua51
+          cargo build --release --target ${{ matrix.target }}
 
           mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.dylib"
 
