@@ -15,7 +15,16 @@ function M.load_binary()
 	-- Try loading from development build first
 	package.cpath = package.cpath .. ";" .. dev_path
 
-	local ok, lib = pcall(require, "libplayerone")
+	local old_cpath = package.cpath
+	package.cpath = dev_path
+
+	local ok, lib = pcall(require, "libplayer_one")
+	if ok then
+		return lib
+	end
+
+	package.cpath = old_cpath
+
 	if ok then
 		return lib
 	end
