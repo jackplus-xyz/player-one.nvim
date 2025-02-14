@@ -1,9 +1,10 @@
-name: Release
+name: CI
 
 on:
   push:
-    tags:
-      - "v[0-9]+.[0-9]+.[0-9]+*"
+    branches: [dev, build, main]
+  pull_request:
+    branches: [dev, build, main]
 
 jobs:
   build:
@@ -114,30 +115,3 @@ jobs:
         with:
           name: ${{ matrix.target }}
           path: ${{ matrix.target }}.*
-
-  release:
-    name: Release
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-
-      - name: Generate checksums
-        run: |
-          for file in ./**/*; do
-            sha256sum "$file" > "${file}.sha256"
-          done
-
-      - name: Upload Release Assets
-        uses: softprops/action-gh-release@v2
-        with:
-          name: ${{ github.ref_name }}
-          tag_name: ${{ github.ref_name }}
-          token: ${{ github.token }}
-          files: ./**/*
-          draft: false
-          prerelease: false
-          generate_release_notes: true
