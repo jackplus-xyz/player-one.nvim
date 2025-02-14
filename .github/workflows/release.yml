@@ -72,19 +72,26 @@ jobs:
           DYLD_LIBRARY_PATH: /usr/local/lib:/opt/homebrew/lib
           PKG_CONFIG_PATH: /usr/local/opt/luajit/lib/pkgconfig:/opt/homebrew/opt/luajit/lib/pkgconfig
         run: |
-          brew install luajit
-          brew link luajit
           if [[ "${{ matrix.target }}" == "x86_64-apple-darwin" ]]; then
+            # Install x86_64 homebrew if it doesn't exist
+            if [ ! -f /usr/local/bin/brew ]; then
+              arch -x86_64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+            fi
+            # Install and set up for x86_64
+            arch -x86_64 /usr/local/bin/brew install luajit
             export LIBRARY_PATH="/usr/local/lib"
             export DYLD_LIBRARY_PATH="/usr/local/lib"
+            export PKG_CONFIG_PATH="/usr/local/opt/luajit/lib/pkgconfig"
+            MACOSX_DEPLOYMENT_TARGET="13" RUSTFLAGS="-L /usr/local/opt/luajit/lib" cargo build --release --target ${{ matrix.target }}
           else
+            # Install and set up for arm64
+            arch -arm64 /opt/homebrew/bin/brew install luajit
             export LIBRARY_PATH="/opt/homebrew/lib"
             export DYLD_LIBRARY_PATH="/opt/homebrew/lib"
+            export PKG_CONFIG_PATH="/opt/homebrew/opt/luajit/lib/pkgconfig"
+            MACOSX_DEPLOYMENT_TARGET="13" RUSTFLAGS="-L /opt/homebrew/opt/luajit/lib" cargo build --release --target ${{ matrix.target }}
           fi
-          # Ensure link against luajit-2.1
-          export RUSTFLAGS="-L /usr/local/opt/luajit/lib -L /opt/homebrew/opt/luajit/lib"
-          # Ventura (https://en.wikipedia.org/wiki/MacOS_version_history#Releases)
-          MACOSX_DEPLOYMENT_TARGET="13" cargo build --release --target ${{ matrix.target }}
+
           mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.dylib"
 
       # - name: Build for Windows
