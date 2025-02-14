@@ -71,8 +71,17 @@ function M.verify_checksum(binary_path, checksum_path)
 	end
 
 	local result = vim.fn.system(cmd)
+	if vim.v.shell_error ~= 0 then
+		error(string.format("Failed to compute checksum: %s", result))
+	end
+
+	if vim.fn.filereadable(checksum_path) == 0 then
+		error(string.format("Checksum file not found or not readable: %s", checksum_path))
+	end
+
+	-- Extract only the hash part from both strings
 	local actual = vim.split(result, "%s+")[1]
-	local expected = vim.fn.readfile(checksum_path)[1]
+	local expected = vim.split(vim.fn.readfile(checksum_path)[1], "%s+")[1]
 
 	return actual == expected
 end
@@ -87,19 +96,47 @@ function M.download_binary(version)
 	local checksum_path = M.get_checksum_path()
 	local temp_path = bin_path .. ".tmp"
 
-	-- Download binary and checksum
-	M.download_file(base_url .. "/" .. triple .. system.get_lib_extension(), temp_path)
-	M.download_file(base_url .. "/" .. triple .. system.get_lib_extension() .. ".sha256", checksum_path)
+	local bin_url = base_url .. "/" .. triple .. system.get_lib_extension()
+	local checksum_url = bin_url .. ".sha256"
 
-	-- Verify checksum
-	if not M.verify_checksum(temp_path, checksum_path) then
-		os.remove(temp_path)
-		error("Binary checksum verification failed")
+	vim.notify("Downloading binary from: " .. bin_url, vim.log.levels.INFO)
+	vim.notify("Downloading checksum from: " .. checksum_url, vim.log.levels.INFO)
+
+	-- Download files with better error handling
+	local ok, err = pcall(function()
+		M.download_file(bin_url, temp_path)
+		M.download_file(checksum_url, checksum_path)
+	end)
+
+	if not ok then
+		-- Clean up temp files on error
+		pcall(vim.fn.delete, temp_path)
+		pcall(vim.fn.delete, checksum_path)
+		error(string.format("Download failed: %s", err))
 	end
 
-	-- Replace binary and save version
-	os.rename(temp_path, bin_path)
-	vim.fn.writefile({ version }, M.get_version_path())
+	-- Single verification attempt with better error messages
+	if not M.verify_checksum(temp_path, checksum_path) then
+		local actual = vim.fn.system({ "shasum", "-a", "256", temp_path })
+		local expected = vim.fn.readfile(checksum_path)[1]
+		-- Clean up temp files
+		pcall(vim.fn.delete, temp_path)
+		pcall(vim.fn.delete, checksum_path)
+		error(string.format("Checksum verification failed:\nExpected: %s\nActual: %s", expected, actual))
+	end
+
+	-- Atomic rename
+	ok, err = pcall(function()
+		os.rename(temp_path, bin_path)
+		vim.fn.writefile({ version }, M.get_version_path())
+	end)
+
+	if not ok then
+		pcall(vim.fn.delete, temp_path)
+		error(string.format("Failed to install binary: %s", err))
+	end
+
+	vim.notify("Binary installed successfully", vim.log.levels.INFO)
 end
 
 function M.ensure_binary()

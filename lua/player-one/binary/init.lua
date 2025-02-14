@@ -7,7 +7,7 @@ function M.load_binary()
 	local ext = system.get_lib_extension()
 	local prefix = system.get_lib_prefix()
 	local plugin_root = debug.getinfo(1).source:match("@?(.*/)")
-	local dev_path = plugin_root .. "../../../target/release/playerone/" .. prefix .. "playerone" .. ext
+	local dev_path = plugin_root .. "../../../target/release/" .. prefix .. "player_one" .. ext
 
 	-- Try loading from development build first
 	package.cpath = package.cpath .. ";" .. dev_path
@@ -19,8 +19,11 @@ function M.load_binary()
 
 	-- Try loading from installed location
 	local bin_dir = download.get_binary_dir()
-	local install_path = bin_dir .. "/playerone/" .. prefix .. "playerone" .. ext
+	local install_path = bin_dir .. "/player-one/" .. prefix .. "player_one" .. ext
 	package.cpath = package.cpath .. ";" .. install_path
+
+	print("Dev path:", dev_path)
+	print("Install path:", install_path)
 
 	ok, lib = pcall(require, "libplayerone")
 	if ok then
