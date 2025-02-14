@@ -66,37 +66,36 @@ jobs:
             sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
             sudo apt-get install -y libasound2-dev:arm64 liblua5.1-0-dev:arm64
           fi
-
-      - name: Install macOS dependencies
-        if: contains(matrix.os, 'macos')
-        run: |
-          brew install lua
-          mkdir -p ~/.cargo
-          cat << EOF > ~/.cargo/config.toml
-          [target.x86_64-apple-darwin]
-          rustflags = [
-            "-C", "link-arg=-undefined",
-            "-C", "link-arg=dynamic_lookup",
-          ]
-
-          [target.aarch64-apple-darwin]
-          rustflags = [
-            "-C", "link-arg=-undefined",
-            "-C", "link-arg=dynamic_lookup",
-          ]
-          EOF
-          xcode-select --install
-          echo "Configured Rust flags in ~/.cargo/config.toml"
-
-          if [[ "${{ matrix.target }}" == "aarch64-apple-darwin" ]]; then
-            echo "LIBRARY_PATH=/opt/homebrew/lib" >> $GITHUB_ENV
-            echo "CPATH=/opt/homebrew/include" >> $GITHUB_ENV
-            echo "PKG_CONFIG_PATH=/opt/homebrew/lib/pkgconfig" >> $GITHUB_ENV
-            echo "RUSTFLAGS=-L/opt/homebrew/lib" >> $GITHUB_ENV
-          else
-            echo "LIBRARY_PATH=/usr/local/lib" >> $GITHUB_ENV
-            echo "CPATH=/usr/local/include" >> $GITHUB_ENV
-          fi
+      #
+      # - name: Install macOS dependencies
+      #   if: contains(matrix.os, 'macos')
+      #   run: |
+      #     brew install lua
+      #     mkdir -p ~/.cargo
+      #     cat << EOF > ~/.cargo/config.toml
+      #     [target.x86_64-apple-darwin]
+      #     rustflags = [
+      #       "-C", "link-arg=-undefined",
+      #       "-C", "link-arg=dynamic_lookup",
+      #     ]
+      #
+      #     [target.aarch64-apple-darwin]
+      #     rustflags = [
+      #       "-C", "link-arg=-undefined",
+      #       "-C", "link-arg=dynamic_lookup",
+      #     ]
+      #     EOF
+      #     echo "Configured Rust flags in ~/.cargo/config.toml"
+      #
+      #     if [[ "${{ matrix.target }}" == "aarch64-apple-darwin" ]]; then
+      #       echo "LIBRARY_PATH=/opt/homebrew/lib" >> $GITHUB_ENV
+      #       echo "CPATH=/opt/homebrew/include" >> $GITHUB_ENV
+      #       echo "PKG_CONFIG_PATH=/opt/homebrew/lib/pkgconfig" >> $GITHUB_ENV
+      #       echo "RUSTFLAGS=-L/opt/homebrew/lib" >> $GITHUB_ENV
+      #     else
+      #       echo "LIBRARY_PATH=/usr/local/lib" >> $GITHUB_ENV
+      #       echo "CPATH=/usr/local/include" >> $GITHUB_ENV
+      #     fi
 
       - name: Build for Linux
         if: contains(matrix.os, 'ubuntu')
@@ -111,9 +110,6 @@ jobs:
           MACOSX_DEPLOYMENT_TARGET: "13"
           LUA_LIB: lua
         run: |
-          echo "Using Rust flags from ~/.cargo/config.toml:"
-          cat ~/.cargo/config.toml
-
           MACOSX_DEPLOYMENT_TARGET="13" cargo build --release --target ${{ matrix.target }}
           mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.dylib"
 
