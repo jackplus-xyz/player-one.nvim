@@ -85,6 +85,7 @@ jobs:
             "-C", "link-arg=dynamic_lookup",
           ]
           EOF
+          xcode-select --install
           echo "Configured Rust flags in ~/.cargo/config.toml"
 
           if [[ "${{ matrix.target }}" == "aarch64-apple-darwin" ]]; then
