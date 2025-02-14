@@ -1,5 +1,4 @@
 [target.x86_64-unknown-linux-musl]
-env = { "CC_x86_64-unknown-linux-musl" = "musl-gcc", "CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_RUSTFLAGS" = "-C target-feature=+crt-static", "CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER" = "musl-gcc" }
 pre-build = [
   "export DEBIAN_FRONTEND=noninteractive",
   "apt-get update",
@@ -10,8 +9,12 @@ pre-build = [
   "apt-get install -y --no-install-recommends libasound2-dev",
 ]
 
+[target.x86_64-unknown-linux-musl.env]
+CC = "musl-gcc"
+RUSTFLAGS = "-C target-feature=+crt-static"
+CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER = "musl-gcc"
+
 [target.aarch64-unknown-linux-musl]
-env = { "CC_aarch64-unknown-linux-musl" = "aarch64-linux-gnu-gcc", "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_RUSTFLAGS" = "-C target-feature=+crt-static", "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER" = "aarch64-linux-gnu-gcc" }
 pre-build = [
   "export DEBIAN_FRONTEND=noninteractive",
   "echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections",
@@ -22,6 +25,11 @@ pre-build = [
   "apt-get install -y --no-install-recommends libc6-dev-arm64-cross",
   "apt-get install -y --no-install-recommends libasound2-dev:arm64",
 ]
+
+[target.aarch64-unknown-linux-musl.env]
+CC = "aarch64-linux-gnu-gcc"
+RUSTFLAGS = "-C target-feature=+crt-static"
+CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER = "aarch64-linux-gnu-gcc"
 
 [target.x86_64-unknown-linux-gnu]
 pre-build = [
