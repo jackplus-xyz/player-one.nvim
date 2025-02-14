@@ -71,6 +71,22 @@ jobs:
         if: contains(matrix.os, 'macos')
         run: |
           brew install lua
+          mkdir -p ~/.cargo
+          cat << EOF > ~/.cargo/config
+          [target.x86_64-apple-darwin]
+          rustflags = [
+            "-C", "link-arg=-undefined",
+            "-C", "link-arg=dynamic_lookup",
+          ]
+
+          [target.aarch64-apple-darwin]
+          rustflags = [
+            "-C", "link-arg=-undefined",
+            "-C", "link-arg=dynamic_lookup",
+          ]
+          EOF
+          echo "Configured Rust flags in ~/.cargo/config"
+
           if [[ "${{ matrix.target }}" == "aarch64-apple-darwin" ]]; then
             echo "LIBRARY_PATH=/opt/homebrew/lib" >> $GITHUB_ENV
             echo "CPATH=/opt/homebrew/include" >> $GITHUB_ENV
@@ -94,23 +110,11 @@ jobs:
           MACOSX_DEPLOYMENT_TARGET: "13"
           LUA_LIB: lua
         run: |
-          # Ventura (https://en.wikipedia.org/wiki/MacOS_version_history#Releases)
+          echo "Using Rust flags from ~/.cargo/config:"
+          cat ~/.cargo/config
+
           MACOSX_DEPLOYMENT_TARGET="13" cargo build --release --target ${{ matrix.target }}
           mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.dylib"
-
-          # brew install lua
-          # BREW_PREFIX=$(brew --prefix)
-          # export LIBRARY_PATH=$BREW_PREFIX/lib
-          # export CPATH=$BREW_PREFIX/include
-          # export PKG_CONFIG_PATH=$BREW_PREFIX/lib/pkgconfig
-          # export RUSTFLAGS="-L $BREW_PREFIX/lib"
-          # export LDFLAGS="-L $BREW_PREFIX/lib"
-          #
-          # # Build with explicit library path
-          # # cargo build --release --target ${{ matrix.target }} --features lua51
-          # cargo build --release --target ${{ matrix.target }}
-          #
-          # mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.dylib"
 
       - name: Build for Windows
         if: contains(matrix.os, 'windows')
