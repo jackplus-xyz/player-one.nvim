@@ -2,8 +2,6 @@ name: Release
 
 on:
   push:
-    # branches:
-    #   - main
     # tags:
     #   - "v*"
 
@@ -14,7 +12,6 @@ jobs:
     permissions:
       contents: read
     strategy:
-      # fail-fast: false
       matrix:
         include:
           ## Linux builds
@@ -26,25 +23,29 @@ jobs:
             target: aarch64-unknown-linux-gnu
             artifact_name: target/aarch64-unknown-linux-gnu/release/libplayer_one.so
           # Musl 1.2.3
-          # - os: ubuntu-latest
-          #   target: x86_64-unknown-linux-musl
-          #   artifact_name: target/x86_64-unknown-linux-musl/release/libplayer_one.so
-          # - os: ubuntu-latest
-          #   target: aarch64-unknown-linux-musl
-          #   artifact_name: target/aarch64-unknown-linux-musl/release/libplayer_one.so
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            artifact_name: target/x86_64-unknown-linux-musl/release/libplayer_one.so
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-musl
+            artifact_name: target/aarch64-unknown-linux-musl/release/libplayer_one.so
+          # Android(Termux)
+          - os: ubuntu-latest
+            target: aarch64-linux-android
+            artifact_name: target/aarch64-linux-android/release/libplayer_one.so
 
           ## macOS builds
-          # - os: macos-latest
-          #   target: x86_64-apple-darwin
-          #   artifact_name: target/x86_64-apple-darwin/release/libplayer_one.dylib
-          # - os: macos-latest
-          #   target: aarch64-apple-darwin
-          #   artifact_name: target/aarch64-apple-darwin/release/libplayerone.dylib
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            artifact_name: target/x86_64-apple-darwin/release/libplayer_one.dylib
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact_name: target/aarch64-apple-darwin/release/libplayer_one.dylib
 
           ## Windows builds
-          # - os: windows-latest
-          #   target: x86_64-pc-windows-msvc
-          #   artifact_name: target/x86_64-pc-windows-msvc/release/player_one.dll
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact_name: target/x86_64-pc-windows-msvc/release/player_one.dll
 
     steps:
       - uses: actions/checkout@v4
@@ -53,77 +54,35 @@ jobs:
 
       - name: Install Rust
         run: |
-          rustup toolchain install stable
-          rustup default stable
+          rustup toolchain install nightly
+          rustup default nightly
           rustup target add ${{ matrix.target }}
 
-      - name: Install Linux dependencies
+      - name: Build for Linux
         if: contains(matrix.os, 'ubuntu')
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libasound2-dev liblua5.1-0-dev
-          if [[ "${{ matrix.target }}" == *"aarch64"* ]]; then
-            sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-            sudo apt-get install -y libasound2-dev:arm64 liblua5.1-0-dev:arm64
-          fi
+          cargo install cross --git https://github.com/cross-rs/cross
+          cross build --release --target ${{ matrix.target }}
+          mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.so"
 
-      # - name: Install macOS dependencies
-      #   if: contains(matrix.os, 'macos')
-      #   run: |
-      #     brew install lua
-      #     mkdir -p ~/.cargo
-      #     cat << EOF > ~/.cargo/config.toml
-      #     [target.x86_64-apple-darwin]
-      #     rustflags = [
-      #       "-C", "link-arg=-undefined",
-      #       "-C", "link-arg=dynamic_lookup",
-      #     ]
-      #
-      #     [target.aarch64-apple-darwin]
-      #     rustflags = [
-      #       "-C", "link-arg=-undefined",
-      #       "-C", "link-arg=dynamic_lookup",
-      #     ]
-      #     EOF
-      #     echo "Configured Rust flags in ~/.cargo/config.toml"
-      #
-      #     if [[ "${{ matrix.target }}" == "aarch64-apple-darwin" ]]; then
-      #       echo "LIBRARY_PATH=/opt/homebrew/lib" >> $GITHUB_ENV
-      #       echo "CPATH=/opt/homebrew/include" >> $GITHUB_ENV
-      #       echo "PKG_CONFIG_PATH=/opt/homebrew/lib/pkgconfig" >> $GITHUB_ENV
-      #       echo "RUSTFLAGS=-L/opt/homebrew/lib" >> $GITHUB_ENV
-      #     else
-      #       echo "LIBRARY_PATH=/usr/local/lib" >> $GITHUB_ENV
-      #       echo "CPATH=/usr/local/include" >> $GITHUB_ENV
-      #     fi
-      #
-      # - name: Build for Linux
-      #   if: contains(matrix.os, 'ubuntu')
-      #   run: |
-      #     cargo install cross --git https://github.com/cross-rs/cross
-      #     cross build --release --target ${{ matrix.target }}
-      #     mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.so"
-      #
-      # - name: Build for macOS
-      #   if: contains(matrix.os, 'macos')
-      #   env:
-      #     MACOSX_DEPLOYMENT_TARGET: "13"
-      #     LUA_LIB: lua
-      #   run: |
-      #     MACOSX_DEPLOYMENT_TARGET="13" cargo build --release --target ${{ matrix.target }}
-      #     mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.dylib"
-      #
-      # - name: Build for Windows
-      #   if: contains(matrix.os, 'windows')
-      #   run: |
-      #     cargo build --release --target ${{ matrix.target }}
-      #     mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.dll"
-      #
-      # - name: Upload artifacts
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: ${{ matrix.target }}
-      #     path: ${{ matrix.target }}.*
+      - name: Build for macOS
+        if: contains(matrix.os, 'macos')
+        run: |
+          # Ventura (https://en.wikipedia.org/wiki/MacOS_version_history#Releases)
+          MACOSX_DEPLOYMENT_TARGET="13" cargo build --release --target ${{ matrix.target }}
+          mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.dylib"
+
+      - name: Build for Windows
+        if: contains(matrix.os, 'windows')
+        run: |
+          cargo build --release --target ${{ matrix.target }}
+          mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.dll"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}
+          path: ${{ matrix.target }}.*
 
   release:
     name: Release
