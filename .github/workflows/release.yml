@@ -72,7 +72,7 @@ jobs:
         run: |
           brew install lua
           mkdir -p ~/.cargo
-          cat << EOF > ~/.cargo/config
+          cat << EOF > ~/.cargo/config.toml
           [target.x86_64-apple-darwin]
           rustflags = [
             "-C", "link-arg=-undefined",
@@ -85,7 +85,7 @@ jobs:
             "-C", "link-arg=dynamic_lookup",
           ]
           EOF
-          echo "Configured Rust flags in ~/.cargo/config"
+          echo "Configured Rust flags in ~/.cargo/config.toml"
 
           if [[ "${{ matrix.target }}" == "aarch64-apple-darwin" ]]; then
             echo "LIBRARY_PATH=/opt/homebrew/lib" >> $GITHUB_ENV
@@ -110,8 +110,8 @@ jobs:
           MACOSX_DEPLOYMENT_TARGET: "13"
           LUA_LIB: lua
         run: |
-          echo "Using Rust flags from ~/.cargo/config:"
-          cat ~/.cargo/config
+          echo "Using Rust flags from ~/.cargo/config.toml:"
+          cat ~/.cargo/config.toml
 
           MACOSX_DEPLOYMENT_TARGET="13" cargo build --release --target ${{ matrix.target }}
           mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.dylib"
