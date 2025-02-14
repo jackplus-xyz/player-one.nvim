@@ -4,8 +4,6 @@ fn main() {
         // Add both x86_64 and arm64 library paths
         println!("cargo:rustc-link-search=/opt/homebrew/lib");
         println!("cargo:rustc-link-search=/usr/local/lib");
-
-        // Link against LuaJIT instead of Lua
         println!("cargo:rustc-link-lib=dylib=luajit-5.1");
     }
 

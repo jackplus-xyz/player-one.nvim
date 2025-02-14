@@ -1,8 +1,25 @@
-[target.aarch64-unknown-linux-gnu]
+[target.x86_64-unknown-linux-musl]
 pre-build = [
+  "export DEBIAN_FRONTEND=noninteractive",
+  "apt-get update",
+  "echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections",
+  "apt-get install -y --no-install-recommends libc6-dev",
+  "yes | apt-get install -y --no-install-recommends musl",
+  "yes | apt-get install -y --no-install-recommends musl-dev",
+  "yes | apt-get install -y --no-install-recommends musl-tools",
+  "apt-get install -y --no-install-recommends libasound2-dev",
+]
+
+[target.aarch64-unknown-linux-musl]
+pre-build = [
+  "export DEBIAN_FRONTEND=noninteractive",
+  "echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections",
   "dpkg --add-architecture arm64",
   "apt-get update",
-  "apt-get install -y --no-install-recommends crossbuild-essential-arm64 libasound2-dev:arm64",
+  "yes | apt-get install -y --no-install-recommends musl musl-dev musl-tools",
+  "apt-get install -y --no-install-recommends gcc-aarch64-linux-gnu",
+  "apt-get install -y --no-install-recommends libc6-dev-arm64-cross",
+  "apt-get install -y --no-install-recommends libasound2-dev:arm64",
 ]
 
 [target.x86_64-unknown-linux-gnu]
@@ -11,15 +28,9 @@ pre-build = [
   "apt-get install -y --no-install-recommends libasound2-dev",
 ]
 
-[target.aarch64-unknown-linux-musl]
+[target.aarch64-unknown-linux-gnu]
 pre-build = [
   "dpkg --add-architecture arm64",
   "apt-get update",
   "apt-get install -y --no-install-recommends crossbuild-essential-arm64 libasound2-dev:arm64",
-]
-
-[target.x86_64-unknown-linux-musl]
-pre-build = [
-  "apt-get update",
-  "apt-get install -y --no-install-recommends libasound2-dev",
 ]

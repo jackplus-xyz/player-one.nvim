@@ -11,6 +11,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
+    env:
+      DEBIAN_FRONTEND: noninteractive
     strategy:
       matrix:
         include:
@@ -61,6 +63,8 @@ jobs:
       - name: Build for Linux
         if: contains(matrix.os, 'ubuntu')
         run: |
+          sudo apt-get update
+          sudo apt-get install -y musl musl-dev musl-tools
           cargo install cross --git https://github.com/cross-rs/cross
           CROSS_CONTAINER_ENGINE_NO_BUILDKIT=1 cross build --release --target ${{ matrix.target }}
           mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.so"
