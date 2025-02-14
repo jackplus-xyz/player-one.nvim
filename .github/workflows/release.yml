@@ -2,78 +2,143 @@ name: Release
 
 on:
   push:
-    tags:
-      - "v*"
+    # branches:
+    #   - main
+    # tags:
+    #   - "v*"
 
 jobs:
-  build-and-release:
-    name: Build and Release
+  build:
+    name: Build ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
         include:
+          ## Linux builds
+          # Glibc 2.31
+          # - os: ubuntu-20.04
+          #   target: x86_64-unknown-linux-gnu
+          #   artifact_name: target/x86_64-unknown-linux-gnu/release/libplayer_one.so
+          # - os: ubuntu-20.04
+          #   target: aarch64-unknown-linux-gnu
+          #   artifact_name: target/aarch64-unknown-linux-gnu/release/libplayer_one.so
+          # Musl 1.2.3
+          # - os: ubuntu-latest
+          #   target: x86_64-unknown-linux-musl
+          #   artifact_name: target/x86_64-unknown-linux-musl/release/libplayer_one.so
+          # - os: ubuntu-latest
+          #   target: aarch64-unknown-linux-musl
+          #   artifact_name: target/aarch64-unknown-linux-musl/release/libplayer_one.so
+
+          ## macOS builds
           - os: macos-latest
             target: x86_64-apple-darwin
-            suffix: dylib
+            artifact_name: target/x86_64-apple-darwin/release/libplayer_one.dylib
           - os: macos-latest
             target: aarch64-apple-darwin
-            suffix: dylib
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            suffix: so
-          - os: ubuntu-latest
-            target: aarch64-unknown-linux-gnu
-            suffix: so
-          - os: windows-latest
-            target: x86_64-pc-windows-msvc
-            suffix: dll
+            artifact_name: target/aarch64-apple-darwin/release/libplayer_one.dylib
+
+          ## Windows builds
+          # - os: windows-latest
+          #   target: x86_64-pc-windows-msvc
+          #   artifact_name: target/x86_64-pc-windows-msvc/release/player_one.dll
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: ${{ matrix.target }}
-          override: true
-
-      - name: Build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release --target ${{ matrix.target }}
-
-      - name: Prepare binary
-        shell: bash
         run: |
-          mkdir -p dist
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            cp target/${{ matrix.target }}/release/player_one.${{ matrix.suffix }} dist/${{ matrix.target }}.${{ matrix.suffix }}
-          else
-            cp target/${{ matrix.target }}/release/libplayer_one.${{ matrix.suffix }} dist/${{ matrix.target }}.${{ matrix.suffix }}
+          rustup toolchain install stable
+          rustup default stable
+          rustup target add ${{ matrix.target }}
+
+      - name: Install Linux dependencies
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev liblua5.1-0-dev
+          if [[ "${{ matrix.target }}" == *"aarch64"* ]]; then
+            sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+            sudo apt-get install -y libasound2-dev:arm64 liblua5.1-0-dev:arm64
           fi
 
-      - name: Upload binary
-        uses: actions/upload-artifact@v3
-        with:
-          name: binaries
-          path: dist/${{ matrix.target }}.${{ matrix.suffix }}
+      - name: Install macOS dependencies
+        if: contains(matrix.os, 'macos')
+        run: |
+          brew install lua
+          if [[ "${{ matrix.target }}" == "aarch64-apple-darwin" ]]; then
+            echo "LIBRARY_PATH=/opt/homebrew/lib" >> $GITHUB_ENV
+            echo "CPATH=/opt/homebrew/include" >> $GITHUB_ENV
+          else
+            echo "LIBRARY_PATH=/usr/local/lib" >> $GITHUB_ENV
+            echo "CPATH=/usr/local/include" >> $GITHUB_ENV
+          fi
 
-  create-release:
-    needs: build-and-release
+      - name: Build for Linux
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          cargo install cross --git https://github.com/cross-rs/cross
+          cross build --release --target ${{ matrix.target }}
+          mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.so"
+
+      - name: Build for macOS
+        if: contains(matrix.os, 'macos')
+        env:
+          MACOSX_DEPLOYMENT_TARGET: "13"
+          LUA_LIB: lua
+        run: |
+          brew install lua
+          BREW_PREFIX=$(brew --prefix)
+          export LIBRARY_PATH=$BREW_PREFIX/lib
+          export CPATH=$BREW_PREFIX/include
+          export PKG_CONFIG_PATH=$BREW_PREFIX/lib/pkgconfig
+          export RUSTFLAGS="-L $BREW_PREFIX/lib"
+
+          # Build with explicit library path
+          cargo build --release --target ${{ matrix.target }} --features lua51
+
+          mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.dylib"
+
+      - name: Build for Windows
+        if: contains(matrix.os, 'windows')
+        run: |
+          cargo build --release --target ${{ matrix.target }}
+          mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.dll"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}
+          path: ${{ matrix.target }}.*
+
+  release:
+    name: Release
+    needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: binaries
-          path: dist
+        uses: actions/download-artifact@v4
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
+      - name: Generate checksums
+        run: |
+          for file in ./**/*; do
+            sha256sum "$file" > "${file}.sha256"
+          done
+
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v2
         with:
-          files: dist/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          token: ${{ github.token }}
+          files: ./**/*
+          draft: false
+          prerelease: false
+          generate_release_notes: true
