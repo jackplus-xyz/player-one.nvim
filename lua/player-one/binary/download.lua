@@ -88,8 +88,7 @@ function M.download_binary(version)
 	M.ensure_binary_dir()
 
 	local triple = system.get_target_triple()
-	local base_url =
-		string.format("https://github.com/jackplus-xyz/player-one.nvim/releases/download/%s/%s", version, triple)
+	local base_url = string.format("https://github.com/jackplus-xyz/player-one.nvim/releases/download/%s", version)
 
 	local bin_path = M.get_binary_path()
 	local checksum_path = M.get_checksum_path()
