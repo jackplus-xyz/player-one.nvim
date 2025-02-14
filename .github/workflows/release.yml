@@ -74,6 +74,8 @@ jobs:
           if [[ "${{ matrix.target }}" == "aarch64-apple-darwin" ]]; then
             echo "LIBRARY_PATH=/opt/homebrew/lib" >> $GITHUB_ENV
             echo "CPATH=/opt/homebrew/include" >> $GITHUB_ENV
+            echo "PKG_CONFIG_PATH=/opt/homebrew/lib/pkgconfig" >> $GITHUB_ENV
+            echo "RUSTFLAGS=-L/opt/homebrew/lib" >> $GITHUB_ENV
           else
             echo "LIBRARY_PATH=/usr/local/lib" >> $GITHUB_ENV
             echo "CPATH=/usr/local/include" >> $GITHUB_ENV
