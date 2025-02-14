@@ -68,9 +68,21 @@ jobs:
       - name: Build for macOS
         if: contains(matrix.os, 'macos')
         env:
-          LIBRARY_PATH: /usr/local/lib
-          DYLD_LIBRARY_PATH: /usr/local/lib
+          LIBRARY_PATH: /usr/local/lib:/opt/homebrew/lib
+          DYLD_LIBRARY_PATH: /usr/local/lib:/opt/homebrew/lib
+          PKG_CONFIG_PATH: /usr/local/opt/luajit/lib/pkgconfig:/opt/homebrew/opt/luajit/lib/pkgconfig
         run: |
+          brew install luajit
+          brew link luajit
+          if [[ "${{ matrix.target }}" == "x86_64-apple-darwin" ]]; then
+            export LIBRARY_PATH="/usr/local/lib"
+            export DYLD_LIBRARY_PATH="/usr/local/lib"
+          else
+            export LIBRARY_PATH="/opt/homebrew/lib"
+            export DYLD_LIBRARY_PATH="/opt/homebrew/lib"
+          fi
+          # Ensure link against luajit-2.1
+          export RUSTFLAGS="-L /usr/local/opt/luajit/lib -L /opt/homebrew/opt/luajit/lib"
           # Ventura (https://en.wikipedia.org/wiki/MacOS_version_history#Releases)
           MACOSX_DEPLOYMENT_TARGET="13" cargo build --release --target ${{ matrix.target }}
           mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.dylib"
