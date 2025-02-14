@@ -2,7 +2,7 @@ local M = {}
 
 function M.get_os()
 	local os = jit.os:lower()
-	if os == "osx" then
+	if os == "osx" or os == "mac" then
 		return "macos"
 	end
 	return os
@@ -32,7 +32,6 @@ function M.get_lib_prefix()
 	return M.get_os() == "windows" and "" or "lib"
 end
 
--- Returns triplet like x86_64-unknown-linux-gnu
 function M.get_target_triple()
 	local os = M.get_os()
 	local arch = M.get_arch()

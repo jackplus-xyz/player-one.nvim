@@ -2,6 +2,7 @@ local system = require("player-one.binary.system")
 
 local M = {}
 
+-- FIXME: conflict with `blink.cmp`
 function M.get_plugin_root()
 	local str = debug.getinfo(1).source
 	return str:sub(2):gsub("/lua/player%-one/binary/download.lua$", "")
@@ -9,7 +10,8 @@ end
 
 function M.get_binary_dir()
 	local data_dir = vim.fn.stdpath("data")
-	return data_dir .. "/player-one/bin"
+	-- Add 'playerone' subdirectory
+	return data_dir .. "/player-one/bin/playerone"
 end
 
 function M.get_binary_path()
@@ -30,6 +32,7 @@ end
 function M.ensure_binary_dir()
 	local bin_dir = M.get_binary_dir()
 	if vim.fn.isdirectory(bin_dir) == 0 then
+		-- Create nested directories
 		vim.fn.mkdir(bin_dir, "p")
 	end
 end
@@ -78,7 +81,7 @@ function M.download_binary(version)
 	M.ensure_binary_dir()
 
 	local triple = system.get_target_triple()
-	local base_url = string.format("https://github.com/username/player-one.nvim/releases/download/%s", version)
+	local base_url = string.format("https://github.com/jackplus-xyz/player-one.nvim/releases/download/%s", version)
 
 	local bin_path = M.get_binary_path()
 	local checksum_path = M.get_checksum_path()

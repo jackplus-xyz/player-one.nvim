@@ -6,84 +6,67 @@ on:
       - "v*"
 
 jobs:
-  build:
-    name: Build ${{ matrix.target }}
+  build-and-release:
+    name: Build and Release
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            cross: false
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-musl
-            cross: true
-          - os: ubuntu-latest
-            target: aarch64-unknown-linux-gnu
-            cross: true
           - os: macos-latest
             target: x86_64-apple-darwin
-            cross: false
+            suffix: dylib
           - os: macos-latest
             target: aarch64-apple-darwin
-            cross: true
+            suffix: dylib
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            suffix: so
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            suffix: so
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            cross: false
+            suffix: dll
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup Rust toolchain
+      - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           target: ${{ matrix.target }}
           override: true
 
-      - name: Install cross-compilation tools
-        if: matrix.cross
-        uses: taiki-e/setup-cross-toolchain-action@v1
-        with:
-          target: ${{ matrix.target }}
-
       - name: Build
         uses: actions-rs/cargo@v1
         with:
           command: build
           args: --release --target ${{ matrix.target }}
-          use-cross: ${{ matrix.cross }}
 
       - name: Prepare binary
         shell: bash
         run: |
           mkdir -p dist
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            cp "target/${{ matrix.target }}/release/playerone.dll" "dist/libplayerone-${{ matrix.target }}.dll"
-          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
-            cp "target/${{ matrix.target }}/release/libplayerone.dylib" "dist/libplayerone-${{ matrix.target }}.dylib"
+            cp target/${{ matrix.target }}/release/player_one.${{ matrix.suffix }} dist/${{ matrix.target }}.${{ matrix.suffix }}
           else
-            cp "target/${{ matrix.target }}/release/libplayerone.so" "dist/libplayerone-${{ matrix.target }}.so"
+            cp target/${{ matrix.target }}/release/libplayer_one.${{ matrix.suffix }} dist/${{ matrix.target }}.${{ matrix.suffix }}
           fi
 
-      - name: Generate checksums
-        shell: bash
-        run: |
-          cd dist
-          sha256sum * > checksums.txt
-
-      - name: Upload artifacts
+      - name: Upload binary
         uses: actions/upload-artifact@v3
         with:
           name: binaries
-          path: dist/*
+          path: dist/${{ matrix.target }}.${{ matrix.suffix }}
 
-  release:
-    needs: build
+  create-release:
+    needs: build-and-release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
         with:
           name: binaries
           path: dist
@@ -92,6 +75,5 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: dist/*
-          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

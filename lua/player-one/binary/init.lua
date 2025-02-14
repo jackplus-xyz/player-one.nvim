@@ -6,15 +6,11 @@ local M = {}
 function M.load_binary()
 	local ext = system.get_lib_extension()
 	local prefix = system.get_lib_prefix()
+	local plugin_root = debug.getinfo(1).source:match("@?(.*/)")
+	local dev_path = plugin_root .. "../../../target/release/playerone/" .. prefix .. "playerone" .. ext
 
-	-- Try loading from development build
-	package.cpath = package.cpath
-		.. ";"
-		.. debug.getinfo(1).source:match("@?(.*/)")
-		.. "../../../target/release/"
-		.. prefix
-		.. "playerone"
-		.. ext
+	-- Try loading from development build first
+	package.cpath = package.cpath .. ";" .. dev_path
 
 	local ok, lib = pcall(require, "libplayerone")
 	if ok then
@@ -23,7 +19,8 @@ function M.load_binary()
 
 	-- Try loading from installed location
 	local bin_dir = download.get_binary_dir()
-	package.cpath = package.cpath .. ";" .. bin_dir .. "/" .. prefix .. "playerone" .. ext
+	local install_path = bin_dir .. "/playerone/" .. prefix .. "playerone" .. ext
+	package.cpath = package.cpath .. ";" .. install_path
 
 	ok, lib = pcall(require, "libplayerone")
 	if ok then
@@ -33,7 +30,14 @@ function M.load_binary()
 	-- Download and try again
 	download.ensure_binary()
 
-	return require("libplayerone")
+	-- Final attempt to load after download
+	ok, lib = pcall(require, "libplayerone")
+	if ok then
+		return lib
+	end
+
+	error("Failed to load playerone binary")
 end
 
+-- Return the loaded binary or throw an error
 return M.load_binary()
