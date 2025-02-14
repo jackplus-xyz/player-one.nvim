@@ -13,3 +13,6 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 thiserror = "2.0.11"
 sfxr = { git = "https://github.com/bzar/sfxr-rs", branch = "master" }
+
+[build]
+rustc-args = ["-Vv"]
