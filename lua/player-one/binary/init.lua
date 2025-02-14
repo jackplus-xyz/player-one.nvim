@@ -1,3 +1,6 @@
+-- Binary compilation and loading functionality adapted from:
+-- https://github.com/Saghen/blink.cmp/tree/main/lua/blink/cmp/fuzzy
+
 local system = require("player-one.binary.system")
 local download = require("player-one.binary.download")
 
