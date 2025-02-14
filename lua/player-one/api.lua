@@ -115,6 +115,7 @@ function M.setup()
 			M.load_theme(theme)
 			vim.notify(theme .. " Loaded")
 		else
+			-- TODO: add picker
 			M.load_theme()
 		end
 	end, {
