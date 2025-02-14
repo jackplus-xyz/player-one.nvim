@@ -34,9 +34,9 @@ jobs:
           #   artifact_name: target/aarch64-unknown-linux-musl/release/libplayer_one.so
 
           ## macOS builds
-          - os: macos-latest
-            target: x86_64-apple-darwin
-            artifact_name: target/x86_64-apple-darwin/release/libplayer_one.dylib
+          # - os: macos-latest
+          #   target: x86_64-apple-darwin
+          #   artifact_name: target/x86_64-apple-darwin/release/libplayer_one.dylib
           - os: macos-latest
             target: aarch64-apple-darwin
             artifact_name: target/aarch64-apple-darwin/release/libplayer_one.dylib
@@ -92,18 +92,23 @@ jobs:
           MACOSX_DEPLOYMENT_TARGET: "13"
           LUA_LIB: lua
         run: |
-          brew install lua
-          BREW_PREFIX=$(brew --prefix)
-          export LIBRARY_PATH=$BREW_PREFIX/lib
-          export CPATH=$BREW_PREFIX/include
-          export PKG_CONFIG_PATH=$BREW_PREFIX/lib/pkgconfig
-          export RUSTFLAGS="-L $BREW_PREFIX/lib"
-
-          # Build with explicit library path
-          # cargo build --release --target ${{ matrix.target }} --features lua51
-          cargo build --release --target ${{ matrix.target }}
-
+          # Ventura (https://en.wikipedia.org/wiki/MacOS_version_history#Releases)
+          MACOSX_DEPLOYMENT_TARGET="13" cargo build --release --target ${{ matrix.target }}
           mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.dylib"
+
+          # brew install lua
+          # BREW_PREFIX=$(brew --prefix)
+          # export LIBRARY_PATH=$BREW_PREFIX/lib
+          # export CPATH=$BREW_PREFIX/include
+          # export PKG_CONFIG_PATH=$BREW_PREFIX/lib/pkgconfig
+          # export RUSTFLAGS="-L $BREW_PREFIX/lib"
+          # export LDFLAGS="-L $BREW_PREFIX/lib"
+          #
+          # # Build with explicit library path
+          # # cargo build --release --target ${{ matrix.target }} --features lua51
+          # cargo build --release --target ${{ matrix.target }}
+          #
+          # mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.dylib"
 
       - name: Build for Windows
         if: contains(matrix.os, 'windows')
