@@ -18,7 +18,7 @@ function M.get_binary_path()
 	local bin_dir = M.get_binary_dir()
 	local prefix = system.get_lib_prefix()
 	local ext = system.get_lib_extension()
-	return bin_dir .. "/" .. prefix .. "playerone" .. ext
+	return bin_dir .. "/" .. prefix .. "player_one" .. ext
 end
 
 function M.get_version_path()
@@ -90,13 +90,14 @@ function M.download_binary(version)
 	M.ensure_binary_dir()
 
 	local triple = system.get_target_triple()
-	local base_url = string.format("https://github.com/jackplus-xyz/player-one.nvim/releases/download/%s", version)
+	local base_url =
+		string.format("https://github.com/jackplus-xyz/player-one.nvim/releases/download/%s/%s", version, triple)
 
 	local bin_path = M.get_binary_path()
 	local checksum_path = M.get_checksum_path()
 	local temp_path = bin_path .. ".tmp"
 
-	local bin_url = base_url .. "/" .. triple .. system.get_lib_extension()
+	local bin_url = string.format("%s/%s%s", base_url, triple, system.get_lib_extension())
 	local checksum_url = bin_url .. ".sha256"
 
 	vim.notify("Downloading binary from: " .. bin_url, vim.log.levels.INFO)
