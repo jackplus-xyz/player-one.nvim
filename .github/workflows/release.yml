@@ -63,6 +63,10 @@ jobs:
 
       - name: Build for Linux
         if: contains(matrix.os, 'ubuntu')
+        env:
+          CROSS_CONTAINER_ENGINE_NO_BUILDKIT: 1
+          CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_RUSTFLAGS: "-C target-feature=+crt-static"
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_RUSTFLAGS: "-C target-feature=+crt-static"
         run: |
           sudo apt-get update
           sudo apt-get install -y musl musl-dev musl-tools
