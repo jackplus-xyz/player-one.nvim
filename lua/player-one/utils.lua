@@ -1,4 +1,4 @@
-local Lib = require("player-one.lib")
+local Lib = require("player-one.binary")
 local State = require("player-one.state")
 
 --- Sound utility functions for PlayerOne

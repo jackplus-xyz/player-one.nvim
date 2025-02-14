@@ -1,0 +1,97 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            cross: false
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            cross: true
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            cross: true
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            cross: false
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            cross: true
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            cross: false
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+          override: true
+
+      - name: Install cross-compilation tools
+        if: matrix.cross
+        uses: taiki-e/setup-cross-toolchain-action@v1
+        with:
+          target: ${{ matrix.target }}
+
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --target ${{ matrix.target }}
+          use-cross: ${{ matrix.cross }}
+
+      - name: Prepare binary
+        shell: bash
+        run: |
+          mkdir -p dist
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            cp "target/${{ matrix.target }}/release/playerone.dll" "dist/libplayerone-${{ matrix.target }}.dll"
+          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+            cp "target/${{ matrix.target }}/release/libplayerone.dylib" "dist/libplayerone-${{ matrix.target }}.dylib"
+          else
+            cp "target/${{ matrix.target }}/release/libplayerone.so" "dist/libplayerone-${{ matrix.target }}.so"
+          fi
+
+      - name: Generate checksums
+        shell: bash
+        run: |
+          cd dist
+          sha256sum * > checksums.txt
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: binaries
+          path: dist/*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: binaries
+          path: dist
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
