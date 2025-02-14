@@ -2,7 +2,6 @@ local system = require("player-one.binary.system")
 
 local M = {}
 
--- FIXME: conflict with `blink.cmp`
 function M.get_plugin_root()
 	local str = debug.getinfo(1).source
 	return str:sub(2):gsub("/lua/player%-one/binary/download.lua$", "")
@@ -10,8 +9,7 @@ end
 
 function M.get_binary_dir()
 	local data_dir = vim.fn.stdpath("data")
-	-- Add 'playerone' subdirectory
-	return data_dir .. "/player-one/bin/playerone"
+	return data_dir .. "/player-one/bin"
 end
 
 function M.get_binary_path()

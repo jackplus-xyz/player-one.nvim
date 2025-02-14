@@ -19,11 +19,8 @@ function M.load_binary()
 
 	-- Try loading from installed location
 	local bin_dir = download.get_binary_dir()
-	local install_path = bin_dir .. "/player-one/" .. prefix .. "player_one" .. ext
+	local install_path = bin_dir .. "/" .. prefix .. "player_one" .. ext
 	package.cpath = package.cpath .. ";" .. install_path
-
-	print("Dev path:", dev_path)
-	print("Install path:", install_path)
 
 	ok, lib = pcall(require, "libplayerone")
 	if ok then
@@ -33,7 +30,6 @@ function M.load_binary()
 	-- Download and try again
 	download.ensure_binary()
 
-	-- Final attempt to load after download
 	ok, lib = pcall(require, "libplayerone")
 	if ok then
 		return lib
