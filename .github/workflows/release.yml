@@ -35,17 +35,17 @@ jobs:
           #  artifact_name: target/aarch64-linux-android/release/libplayer_one.so
 
           ## macOS builds
-          - os: macos-latest
-            target: x86_64-apple-darwin
-            artifact_name: target/x86_64-apple-darwin/release/libplayer_one.dylib
-          - os: macos-latest
-            target: aarch64-apple-darwin
-            artifact_name: target/aarch64-apple-darwin/release/libplayer_one.dylib
+          # - os: macos-latest
+          #   target: x86_64-apple-darwin
+          #   artifact_name: target/x86_64-apple-darwin/release/libplayer_one.dylib
+          # - os: macos-latest
+          #   target: aarch64-apple-darwin
+          #   artifact_name: target/aarch64-apple-darwin/release/libplayer_one.dylib
 
-          ### Windows builds
-          #- os: windows-latest
-          #  target: x86_64-pc-windows-msvc
-          #  artifact_name: target/x86_64-pc-windows-msvc/release/player_one.dll
+          ## Windows builds
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact_name: target/x86_64-pc-windows-msvc/release/player_one.dll
 
     steps:
       - uses: actions/checkout@v4
@@ -65,41 +65,41 @@ jobs:
       #     cross build --release --target ${{ matrix.target }}
       #     mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.so"
 
-      - name: Build for macOS
-        if: contains(matrix.os, 'macos')
-        env:
-          LIBRARY_PATH: /usr/local/lib:/opt/homebrew/lib
-          DYLD_LIBRARY_PATH: /usr/local/lib:/opt/homebrew/lib
-          PKG_CONFIG_PATH: /usr/local/opt/luajit/lib/pkgconfig:/opt/homebrew/opt/luajit/lib/pkgconfig
-        run: |
-          if [[ "${{ matrix.target }}" == "x86_64-apple-darwin" ]]; then
-            # Install x86_64 homebrew if it doesn't exist
-            if [ ! -f /usr/local/bin/brew ]; then
-              arch -x86_64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-            fi
-            # Install and set up for x86_64
-            arch -x86_64 /usr/local/bin/brew install luajit
-            export LIBRARY_PATH="/usr/local/lib"
-            export DYLD_LIBRARY_PATH="/usr/local/lib"
-            export PKG_CONFIG_PATH="/usr/local/opt/luajit/lib/pkgconfig"
-            MACOSX_DEPLOYMENT_TARGET="13" RUSTFLAGS="-L /usr/local/opt/luajit/lib" cargo build --release --target ${{ matrix.target }}
-          else
-            # Install and set up for arm64
-            arch -arm64 /opt/homebrew/bin/brew install luajit
-            export LIBRARY_PATH="/opt/homebrew/lib"
-            export DYLD_LIBRARY_PATH="/opt/homebrew/lib"
-            export PKG_CONFIG_PATH="/opt/homebrew/opt/luajit/lib/pkgconfig"
-            MACOSX_DEPLOYMENT_TARGET="13" RUSTFLAGS="-L /opt/homebrew/opt/luajit/lib" cargo build --release --target ${{ matrix.target }}
-          fi
-
-          mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.dylib"
-
-      # - name: Build for Windows
-      #   if: contains(matrix.os, 'windows')
+      # - name: Build for macOS
+      #   if: contains(matrix.os, 'macos')
+      #   env:
+      #     LIBRARY_PATH: /usr/local/lib:/opt/homebrew/lib
+      #     DYLD_LIBRARY_PATH: /usr/local/lib:/opt/homebrew/lib
+      #     PKG_CONFIG_PATH: /usr/local/opt/luajit/lib/pkgconfig:/opt/homebrew/opt/luajit/lib/pkgconfig
       #   run: |
-      #     cargo build --release --target ${{ matrix.target }}
-      #     mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.dll"
+      #     if [[ "${{ matrix.target }}" == "x86_64-apple-darwin" ]]; then
+      #       # Install x86_64 homebrew if it doesn't exist
+      #       if [ ! -f /usr/local/bin/brew ]; then
+      #         arch -x86_64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+      #       fi
+      #       # Install and set up for x86_64
+      #       arch -x86_64 /usr/local/bin/brew install luajit
+      #       export LIBRARY_PATH="/usr/local/lib"
+      #       export DYLD_LIBRARY_PATH="/usr/local/lib"
+      #       export PKG_CONFIG_PATH="/usr/local/opt/luajit/lib/pkgconfig"
+      #       MACOSX_DEPLOYMENT_TARGET="13" RUSTFLAGS="-L /usr/local/opt/luajit/lib" cargo build --release --target ${{ matrix.target }}
+      #     else
+      #       # Install and set up for arm64
+      #       arch -arm64 /opt/homebrew/bin/brew install luajit
+      #       export LIBRARY_PATH="/opt/homebrew/lib"
+      #       export DYLD_LIBRARY_PATH="/opt/homebrew/lib"
+      #       export PKG_CONFIG_PATH="/opt/homebrew/opt/luajit/lib/pkgconfig"
+      #       MACOSX_DEPLOYMENT_TARGET="13" RUSTFLAGS="-L /opt/homebrew/opt/luajit/lib" cargo build --release --target ${{ matrix.target }}
+      #     fi
       #
+      #     mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.dylib"
+
+      - name: Build for Windows
+        if: contains(matrix.os, 'windows')
+        run: |
+          cargo build --release --target ${{ matrix.target }}
+          mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.dll"
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
