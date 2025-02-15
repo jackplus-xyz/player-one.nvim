@@ -6,6 +6,8 @@ local download = require("player-one.binary.download")
 
 local M = {}
 
+local SYMBOL_NAME = "luaopen_libplayerone"
+
 -- Helper: try to load a library from an absolute path
 local function load_lib(path, symbol)
 	vim.notify("Attempting to load: " .. path .. " with symbol: " .. symbol, vim.log.levels.DEBUG)
@@ -33,7 +35,7 @@ function M.load_binary()
 
 	-- Try loading development binary if it exists
 	if vim.fn.filereadable(dev_binary) == 1 then
-		local lib, err = load_lib(dev_binary, "luaopen_libplayer_one")
+		local lib, err = load_lib(dev_binary, SYMBOL_NAME)
 		if lib then
 			vim.notify("Successfully loaded dev binary", vim.log.levels.DEBUG)
 			return lib
@@ -52,7 +54,7 @@ function M.load_binary()
 	download.ensure_binary()
 
 	if vim.fn.filereadable(install_binary) == 1 then
-		local lib, err = load_lib(install_binary, "luaopen_libplayer_one") -- Using consistent symbol name
+		local lib, err = load_lib(install_binary, SYMBOL_NAME)
 		if lib then
 			vim.notify("Successfully loaded installed binary", vim.log.levels.DEBUG)
 			return lib
