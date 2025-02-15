@@ -13,17 +13,11 @@ function M.load_binary()
 	local dev_path = plugin_root .. "../../../target/release/" .. prefix .. "player_one" .. ext
 
 	-- Try loading from development build first
-	package.cpath = package.cpath .. ";" .. dev_path
-
-	local old_cpath = package.cpath
-	package.cpath = dev_path
+	local original_cpath = package.cpath
+	package.cpath = dev_path .. ";" .. original_cpath
 
 	local ok, lib = pcall(require, "libplayer_one")
-	if ok then
-		return lib
-	end
-
-	package.cpath = old_cpath
+	package.cpath = original_cpath -- restore immediately after loading
 
 	if ok then
 		return lib
