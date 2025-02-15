@@ -8,8 +8,8 @@ function M.get_plugin_root()
 end
 
 function M.get_binary_dir()
-	local data_dir = vim.fn.stdpath("data")
-	return data_dir .. "/player-one/bin"
+	local plugin_root = M.get_plugin_root()
+	return plugin_root .. "/bin"
 end
 
 function M.get_binary_path()
