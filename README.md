@@ -105,15 +105,17 @@ To create your own theme, see [Theme](https://github.com/jackplus-xyz/player-one
 
 ## Credits
 
+### Resources
+
 - [sfxr](https://www.drpetter.se/project_sfxr.html): The original sfxr by DrPetter.
 - [jsfxr](https://sfxr.me/): An online 8 bit sound maker and sfx generator.
 
-Libraries used:
+### Libraries
 
 - [mlua-rs/mlua](https://github.com/mlua-rs/mlua): High level Lua 5.4/5.3/5.2/5.1 (including LuaJIT) and Roblox Luau bindings to Rust with async/await support.
 - [bzar/sfxr-rs](https://github.com/bzar/sfxr-rs): Reimplementation of DrPetter's "sfxr" sound effect generator as a Rust library.
 
-Inspired by:
+### Inspirations
 
 - [Klack](https://tryklack.com/): A MacOS app that adds mechanical keyboard sounds to every keystroke.
 - [EggbertFluffle/beepboop.nvim](https://github.com/EggbertFluffle/beepboop.nvim): A Neovim plugin that incorporate audio cues.
