@@ -140,7 +140,9 @@ end
 function M.ensure_binary()
 	local current_version = M.get_current_version()
 	local required_version = vim.fn
-		.system("curl -s https://api.github.com/repos/player-one/binary/releases/latest | grep 'tag_name' | cut -d '\"' -f 4")
+		.system(
+			"curl -s https://api.github.com/repos/jackplus-xyz/player-one.nvim/releases/latest | grep 'tag_name' | cut -d '\"' -f 4"
+		)
 		:gsub("%s+", "")
 
 	if current_version ~= required_version then
