@@ -38,7 +38,7 @@ function M.load_binary()
 	local install_binary = bin_dir .. "/" .. prefix .. "player_one" .. ext
 
 	if vim.fn.filereadable(install_binary) == 1 then
-		local lib, err = load_lib(install_binary, "luaopen_libplayerone")
+		local lib, err = load_lib(install_binary, "luaopen_libplayer_one")
 		if lib then
 			return lib
 		else
