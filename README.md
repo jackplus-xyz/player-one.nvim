@@ -1,6 +1,6 @@
 # player-one.nvim
 
-A Neovim plugin that adds retro gaming charm to your coding experience with 8-bit sound effects on keystrokes.
+A plugin that adds 8-bit sound effects to Neovim.
 
 <img width="1280" alt="banner" src="https://github.com/user-attachments/assets/dae84cd4-a031-43a2-9f42-c3ef494c1af0" />
 
@@ -8,7 +8,7 @@ A Neovim plugin that adds retro gaming charm to your coding experience with 8-bi
 
 ## Overview
 
-`player-one.nvim` is a plugin that generates 8-bit sound effects using sfxr synthesis. It enhances your editing experience with retro-style audio feedback for various Neovim events, without requiring external audio files.
+`player-one.nvim` is a plugin that generates 8-bit sound effects on the fly, no audio files required! It enhances your editing experience with retro-style audio feedback for various Neovim events.
 
 ## Features
 
