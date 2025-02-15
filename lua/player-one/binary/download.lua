@@ -8,8 +8,8 @@ function M.get_plugin_root()
 end
 
 function M.get_binary_dir()
-	local data_dir = vim.fn.stdpath("data")
-	return data_dir .. "/player-one/bin"
+	local plugin_root = M.get_plugin_root()
+	return plugin_root .. "/bin"
 end
 
 function M.get_binary_path()
@@ -139,7 +139,11 @@ end
 
 function M.ensure_binary()
 	local current_version = M.get_current_version()
-	local required_version = "v0.1.0" -- or fetch latest from GitHub API
+	local required_version = vim.fn
+		.system(
+			"curl -s https://api.github.com/repos/jackplus-xyz/player-one.nvim/releases/latest | grep 'tag_name' | cut -d '\"' -f 4"
+		)
+		:gsub("%s+", "")
 
 	if current_version ~= required_version then
 		vim.notify("PlayerOne: Downloading binary...", vim.log.levels.INFO)

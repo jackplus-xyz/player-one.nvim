@@ -31,7 +31,7 @@ A Neovim plugin that adds retro gaming charm to your coding experience with 8-bi
 
 ## Quickstart
 
-1. Install with your favorite package manager:
+1. Install with a plugin manager of your choice.
 
 2. Restart NeoVim and you should now hear:
 
