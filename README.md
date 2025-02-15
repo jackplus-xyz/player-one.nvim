@@ -67,10 +67,26 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
   is_enabled = true,
 
   ---@type number Minimum interval between sounds in seconds
+  ---Prevents sound overlapping and potential audio flooding when
+  ---multiple keystrokes happen in rapid succession
   min_interval = 0.05,
 
   ---@type PlayerOne.Theme|string Either a preset name or custom sounds table
+  ---Available presets: "chiptune", "crystal", "synth"
   theme = "chiptune",
+}
+```
+
+Example:
+
+```lua
+{
+  "jackplus-xyz/player-one.nvim",
+  opts = {
+  is_enabled = false, -- Start with sounds disabled until explicitly enabled
+  min_interval = 0.1, -- Increase delay between sounds to 100ms
+  theme = "synth",    -- Use the synthesizer sound theme
+  }
 }
 ```
 
@@ -78,15 +94,11 @@ For advanced configuration, see [Wiki](https://github.com/jackplus-xyz/player-on
 
 ### Theme
 
-A Theme is a collection of sounds. Just like how colorschemes map colors to text objects, themes map sound effects to Neovim events.
-
 The plugin comes with three built-in themes:
 
 - `chiptune`: Classic 8-bit game sounds (default)
 - `crystal`: Clear, crystalline sounds with sparkling tones
 - `synth`: Modern synthesizer sounds with smooth tones
-
-When an event occurs (like saving a file or moving the cursor), the theme plays its corresponding sound effect.
 
 To create your own theme, see [Theme](https://github.com/jackplus-xyz/player-one.nvim/wiki/Theme).
 
