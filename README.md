@@ -20,6 +20,8 @@ A plugin that adds 8-bit sound effects to Neovim.
 ## Requirements
 
 - [Neovim](https://neovim.io/) >= 0.9.0
+- Audio Output Device: Working audio output (speakers/headphones)
+- Rust toolchain if you want to build from source
 
 ### System Support Status
 
