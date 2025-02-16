@@ -122,7 +122,6 @@ return {
 			env_decay = 0.05,
 			volume = 0.4,
 		},
-		callback = "play",
 	},
 	{
 		event = "TextYankPost",
@@ -178,6 +177,5 @@ return {
 			env_decay = 0.05,
 			volume = 0.4,
 		},
-		callback = "play",
 	},
 }

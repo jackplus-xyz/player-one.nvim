@@ -1,6 +1,6 @@
 # player-one.nvim
 
-A Neovim plugin that adds retro gaming charm to your coding experience with 8-bit sound effects on keystrokes.
+A plugin that adds 8-bit sound effects to Neovim.
 
 <img width="1280" alt="banner" src="https://github.com/user-attachments/assets/dae84cd4-a031-43a2-9f42-c3ef494c1af0" />
 
@@ -8,7 +8,7 @@ A Neovim plugin that adds retro gaming charm to your coding experience with 8-bi
 
 ## Overview
 
-`player-one.nvim` is a plugin that generates 8-bit sound effects using sfxr synthesis. It enhances your editing experience with retro-style audio feedback for various Neovim events, without requiring external audio files.
+`player-one.nvim` is a plugin that generates 8-bit sound effects on the fly, no audio files required! It enhances your editing experience with retro-style audio feedback for various Neovim events.
 
 ## Features
 
@@ -20,6 +20,8 @@ A Neovim plugin that adds retro gaming charm to your coding experience with 8-bi
 ## Requirements
 
 - [Neovim](https://neovim.io/) >= 0.9.0
+- Audio Output Device: Working audio output (speakers/headphones)
+- Rust toolchain if you want to build from source
 
 ### System Support Status
 
@@ -74,6 +76,39 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
   ---@type PlayerOne.Theme|string Either a preset name or custom sounds table
   ---Available presets: "chiptune", "crystal", "synth"
   theme = "chiptune",
+
+  ---@type boolean Whether to print the debug message
+  debug = false,
+
+  ---@class PlayerOne.BinaryConfig
+  binary = {
+    -- Automatically download updates (default: true)
+    auto_update = true,
+
+    -- Version cache timeout in seconds (default: 3600)
+    cache_timeout = 3600,
+
+    -- Download timeout in seconds (default: 60)
+    download_timeout = 60,
+
+    -- Verify binary checksums (default: true)
+    verify_checksum = true,
+
+    -- Use development build if available (default: true)
+    use_development = true,
+
+    -- GitHub API token for higher rate limits (default: nil)
+    github_api_token = nil,
+
+    -- Proxy configuration
+    proxy = {
+      -- Proxy URL (default: nil)
+      url = nil,
+
+      -- Use system proxy settings (default: true)
+      from_env = true,
+    },
+  },
 }
 ```
 
@@ -113,17 +148,32 @@ To create your own theme, see [Theme](https://github.com/jackplus-xyz/player-one
 | `:PlayerOneToggle`       | Toggle sound theme                    |
 | `:PlayerOneLoad {theme}` | Load a theme (chiptune/crystal/synth) |
 
+## Roadmap
+
+- [ ] Performance optimizations
+  - [ ] Implement caching for frequently used sounds
+- [ ] Documentation Improvements
+  - [ ] Add detailed API reference
+  - [ ] Include code examples
+- [ ] Test Coverage Expansion
+  - [ ] Unit tests for core components
+  - [ ] Integration tests
+  - [ ] Performance benchmarks
+- [ ] Multi-track melody playback
+
 ## Credits
+
+### Resources
 
 - [sfxr](https://www.drpetter.se/project_sfxr.html): The original sfxr by DrPetter.
 - [jsfxr](https://sfxr.me/): An online 8 bit sound maker and sfx generator.
 
-Libraries used:
+### Libraries
 
 - [mlua-rs/mlua](https://github.com/mlua-rs/mlua): High level Lua 5.4/5.3/5.2/5.1 (including LuaJIT) and Roblox Luau bindings to Rust with async/await support.
 - [bzar/sfxr-rs](https://github.com/bzar/sfxr-rs): Reimplementation of DrPetter's "sfxr" sound effect generator as a Rust library.
 
-Inspired by:
+### Inspirations
 
 - [Klack](https://tryklack.com/): A MacOS app that adds mechanical keyboard sounds to every keystroke.
 - [EggbertFluffle/beepboop.nvim](https://github.com/EggbertFluffle/beepboop.nvim): A Neovim plugin that incorporate audio cues.

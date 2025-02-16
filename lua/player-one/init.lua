@@ -14,6 +14,7 @@ local Config = require("player-one.config")
 ---@field enable fun()
 ---@field disable fun()
 ---@field toggle fun()
+---@field reload_binary fun(): boolean
 local M = {}
 
 M = Config.setup()
