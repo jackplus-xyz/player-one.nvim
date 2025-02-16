@@ -76,7 +76,7 @@ end
 ---Initialize the binary system
 ---@return boolean success Always returns true or throws an error
 ---@throws string When system is not supported or initialization fails
-function M.initialize()
+function M.init()
 	-- Check system compatibility
 	local triple = system.get_target_triple()
 	if not triple then
@@ -120,7 +120,7 @@ function M.load_binary()
 	end
 
 	-- Initialize binary system (will throw on error)
-	M.initialize()
+	M.init()
 
 	-- Get version information (will throw on error)
 	local info = get_cached_version_info()

@@ -60,19 +60,35 @@ function M.get_current_version()
 end
 
 function M.get_latest_version()
-	local ok, result = pcall(vim.fn.system, {
-		"curl",
-		"--silent",
-		"--fail",
-		"https://api.github.com/repos/jackplus-xyz/player-one.nvim/releases/latest",
-	})
+	local cache_file = vim.fn.stdpath("cache") .. "/player-one-version"
+	local current_time = os.time()
 
-	if not ok then
-		error(errors.format_error("version_check_failed", "Failed to fetch latest version"))
+	if vim.fn.filereadable(cache_file) == 1 then
+		local cache = vim.fn.readfile(cache_file)
+		local timestamp = tonumber(cache[1])
+		if current_time - timestamp < 86400 then -- 24 hours
+			return cache[2]
+		end
 	end
 
-	local release = vim.json.decode(result)
-	return release and release.tag_name
+	vim.defer_fn(function()
+		local ok, result = pcall(vim.fn.system, {
+			"curl",
+			"--silent",
+			"--fail",
+			"https://api.github.com/repos/jackplus-xyz/player-one.nvim/releases/latest",
+		})
+
+		if ok then
+			local release = vim.json.decode(result)
+			if release and release.tag_name then
+				vim.fn.writefile({ tostring(current_time), release.tag_name }, cache_file)
+			end
+		end
+	end, 1000)
+
+	-- Return cached or nil for now
+	return vim.fn.filereadable(cache_file) == 1 and vim.fn.readfile(cache_file)[2] or nil
 end
 
 function M.has_development_build()
