@@ -1,4 +1,3 @@
-local system = require("player-one.binary.system")
 local errors = require("player-one.binary.errors")
 local paths = require("player-one.binary.paths")
 

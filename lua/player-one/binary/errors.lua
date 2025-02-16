@@ -2,6 +2,8 @@ local M = {}
 
 local ERROR_MESSAGES = {
 	binary_load_failed = "Failed to load player-one binary",
+	binary_system_init_failed = "Failed to initialize binary system",
+	binary_cache_invalid = "Binary cache is invalid",
 	version_check_failed = "Failed to check version information",
 	version_write_failed = "Failed to write version information",
 	download_failed = "Failed to download binary",
@@ -13,6 +15,10 @@ local ERROR_MESSAGES = {
 	file_write_failed = "Failed to write file",
 	file_delete_failed = "Failed to delete file",
 	file_rename_failed = "Failed to rename file",
+	download_cleanup_failed = "Failed to clean up after download failure",
+	download_url_failed = "Failed to generate download URLs",
+	download_verify_failed = "Failed to verify downloaded binary",
+	download_install_failed = "Failed to install downloaded binary",
 }
 
 function M.format_error(code, details)

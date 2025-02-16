@@ -1,19 +1,29 @@
 local system = require("player-one.binary.system")
 local errors = require("player-one.binary.errors")
-local paths = require("player-one.binary.paths")
 
 local M = {}
 
 function M.ensure_dir(path)
+	if not path then
+		error(errors.format_error("dir_create_failed", "No path provided"))
+	end
+
 	if vim.fn.isdirectory(path) == 0 then
 		local ok, err = pcall(vim.fn.mkdir, path, "p")
 		if not ok then
-			error(errors.format_error("dir_create_failed", err))
+			error(
+				errors.format_error("dir_create_failed", string.format("Failed to create directory %s: %s", path, err))
+			)
 		end
 	end
 end
 
+-- Better error handling for downloads
 function M.download_file(url, output_path)
+	if not url or not output_path then
+		error(errors.format_error("download_failed", "Missing URL or output path"))
+	end
+
 	local cmd = {
 		"curl",
 		"--fail",
@@ -26,26 +36,38 @@ function M.download_file(url, output_path)
 	}
 
 	local ok, result = pcall(vim.fn.system, cmd)
-	if not ok or vim.v.shell_error ~= 0 then
-		error(errors.format_error("download_failed", string.format("Failed to download %s: %s", url, result)))
+	if not ok then
+		error(errors.format_error("download_failed", string.format("System error downloading %s: %s", url, result)))
+	end
+
+	if vim.v.shell_error ~= 0 then
+		error(errors.format_error("download_failed", string.format("Curl failed for %s: %s", url, result)))
 	end
 end
 
+-- Improved checksum verification
 function M.verify_checksum(file_path, checksum_path)
-	local cmd
-	if system.get_os() == "macos" then
-		cmd = { "shasum", "-a", "256", file_path }
-	else
-		cmd = { "sha256sum", file_path }
+	if not file_path or not checksum_path then
+		error(errors.format_error("checksum_failed", "Missing file or checksum path"))
 	end
 
-	local ok, output = pcall(vim.fn.system, cmd)
-	if not ok or vim.v.shell_error ~= 0 then
-		error(errors.format_error("checksum_failed", "Failed to compute checksum"))
+	if vim.fn.filereadable(file_path) == 0 then
+		error(errors.format_error("checksum_failed", string.format("Binary file not readable: %s", file_path)))
 	end
 
 	if vim.fn.filereadable(checksum_path) == 0 then
-		error(errors.format_error("checksum_failed", "Checksum file not found"))
+		error(errors.format_error("checksum_failed", string.format("Checksum file not readable: %s", checksum_path)))
+	end
+
+	local cmd = system.get_os() == "macos" and { "shasum", "-a", "256", file_path } or { "sha256sum", file_path }
+
+	local ok, output = pcall(vim.fn.system, cmd)
+	if not ok then
+		error(errors.format_error("checksum_failed", string.format("Failed to compute checksum: %s", output)))
+	end
+
+	if vim.v.shell_error ~= 0 then
+		error(errors.format_error("checksum_failed", string.format("Checksum command failed: %s", output)))
 	end
 
 	local actual = vim.split(output, "%s+")[1]
@@ -63,18 +85,37 @@ function M.verify_checksum(file_path, checksum_path)
 	return true
 end
 
+-- Better file renaming
 function M.rename_file(old_path, new_path)
+	if not old_path or not new_path then
+		error(errors.format_error("file_rename_failed", "Missing source or destination path"))
+	end
+
+	if vim.fn.filereadable(old_path) == 0 then
+		error(errors.format_error("file_rename_failed", string.format("Source file not readable: %s", old_path)))
+	end
+
 	local ok, err = pcall(os.rename, old_path, new_path)
 	if not ok then
-		error(errors.format_error("file_rename_failed", err))
+		error(
+			errors.format_error(
+				"file_rename_failed",
+				string.format("Failed to rename %s to %s: %s", old_path, new_path, err)
+			)
+		)
 	end
 end
 
+-- Improved file deletion
 function M.delete_file(path)
+	if not path then
+		error(errors.format_error("file_delete_failed", "No path provided"))
+	end
+
 	if vim.fn.filereadable(path) == 1 then
 		local ok, err = pcall(vim.fn.delete, path)
 		if not ok then
-			error(errors.format_error("file_delete_failed", err))
+			error(errors.format_error("file_delete_failed", string.format("Failed to delete %s: %s", path, err)))
 		end
 	end
 end
