@@ -118,6 +118,14 @@ function M.load_binary()
 		return loaded_lib
 	end
 
+	if version.has_local_build() then
+		local lib, _ = try_load_library(version.get_install_path())
+		if lib then
+			loaded_lib = lib
+			return lib
+		end
+	end
+
 	M.init()
 
 	local info = get_cached_version_info()

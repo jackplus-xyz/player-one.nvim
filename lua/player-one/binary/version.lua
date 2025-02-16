@@ -96,6 +96,11 @@ function M.has_development_build()
 	return vim.fn.filereadable(dev_path) == 1
 end
 
+function M.has_local_build()
+	local install_path = M.get_install_path()
+	return vim.fn.filereadable(install_path) == 1
+end
+
 ---Get complete version information
 ---@return PlayerOne.VersionInfo
 function M.get_info()
