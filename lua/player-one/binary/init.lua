@@ -3,7 +3,7 @@
 
 local Download = require("player-one.binary.download")
 local Errors = require("player-one.binary.errors")
-local Options = require("player-one.state").options
+local State = require("player-one.state")
 local System = require("player-one.binary.system")
 local Version = require("player-one.binary.version")
 
@@ -93,7 +93,7 @@ function M.init()
 	local info = get_cached_version_info()
 
 	-- Log initialization state
-	if Options.debug then
+	if State.debug then
 		vim.notify(
 			string.format(
 				"PlayerOne: Initializing binary system\n"
