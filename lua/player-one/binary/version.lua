@@ -1,5 +1,6 @@
 local system = require("player-one.binary.system")
 local errors = require("player-one.binary.errors")
+local paths = require("player-one.binary.paths")
 
 local M = {}
 
@@ -10,26 +11,18 @@ local M = {}
 ---@field git table|nil Git repository information
 ---@field timestamp number When this info was last updated
 
--- Get paths
 function M.get_development_path()
-	local source_path = debug.getinfo(1).source:match("@?(.*/)")
-	local dev_path = source_path .. "../../../target/release/"
-	local prefix = system.get_lib_prefix()
-	local ext = system.get_lib_extension()
-	return dev_path .. prefix .. "player_one" .. ext
+	-- Use the same release directory for both dev and downloaded builds
+	return paths.get_binary_path()
 end
 
 function M.get_install_path()
-	local source_path = debug.getinfo(1).source:match("@?(.*/)")
-	local install_dir = source_path .. "../../../bin/"
-	local prefix = system.get_lib_prefix()
-	local ext = system.get_lib_extension()
-	return install_dir .. prefix .. "player_one" .. ext
+	-- Use the same path as development path
+	return paths.get_binary_path()
 end
 
 function M.get_version_file()
-	local source_path = debug.getinfo(1).source:match("@?(.*/)")
-	return source_path .. "../../../bin/version"
+	return paths.get_version_path()
 end
 
 -- Version checking
@@ -40,8 +33,7 @@ function M.get_git_info()
 		return vim.v.shell_error == 0 and vim.trim(output) or nil
 	end
 
-	local source_path = debug.getinfo(1).source:match("@?(.*/)")
-	local repo_path = vim.fn.fnamemodify(source_path .. "../../../", ":p")
+	local repo_path = paths.get_plugin_root()
 
 	-- Check if we're in a git repo
 	local is_git = vim.fn.finddir(".git", repo_path) ~= ""
@@ -56,6 +48,7 @@ function M.get_git_info()
 	}
 end
 
+-- Rest of the functions remain the same, but use the new paths
 function M.get_current_version()
 	local version_file = M.get_version_file()
 	if vim.fn.filereadable(version_file) == 1 then
@@ -135,6 +128,11 @@ end
 ---@param version string Version to write
 function M.write_version(version)
 	local version_file = M.get_version_file()
+	-- Ensure directory exists before writing
+	local dir = vim.fn.fnamemodify(version_file, ":h")
+	if vim.fn.isdirectory(dir) == 0 then
+		vim.fn.mkdir(dir, "p")
+	end
 	local ok = pcall(vim.fn.writefile, { version }, version_file)
 	if not ok then
 		error(errors.format_error("version_write_failed", "Failed to write to " .. version_file))

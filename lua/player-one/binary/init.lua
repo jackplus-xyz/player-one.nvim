@@ -3,7 +3,7 @@
 
 local system = require("player-one.binary.system")
 local version = require("player-one.binary.version")
-local files = require("player-one.binary.download.files")
+local download = require("player-one.binary.download")
 local paths = require("player-one.binary.paths")
 local errors = require("player-one.binary.errors")
 
