@@ -2,70 +2,154 @@
 -- https://github.com/Saghen/blink.cmp/tree/main/lua/blink/cmp/fuzzy
 
 local system = require("player-one.binary.system")
+local version = require("player-one.binary.version")
 local download = require("player-one.binary.download")
+local errors = require("player-one.binary.errors")
 
 local M = {}
 
-local SYMBOL_NAME = "luaopen_libplayerone"
+-- Cache for loaded library
+local loaded_lib = nil
 
--- Helper: try to load a library from an absolute path
-local function load_lib(path, symbol)
-	vim.notify("Attempting to load: " .. path .. " with symbol: " .. symbol, vim.log.levels.DEBUG)
+-- Cache for version info to prevent frequent checks
+local version_info_cache = {
+	info = nil,
+	timestamp = 0,
+}
 
+---Check if version info cache is valid
+---@return boolean
+local function is_cache_valid()
+	return version_info_cache.info and (os.time() - version_info_cache.timestamp) < 3600 -- 1 hour cache
+end
+
+---Get version info with caching
+---@return PlayerOne.VersionInfo
+local function get_cached_version_info()
+	if not is_cache_valid() then
+		version_info_cache.info = version.get_info()
+		version_info_cache.timestamp = os.time()
+	end
+	return version_info_cache.info
+end
+
+---Attempt to load library from path
+---@param path string Full path to library file
+---@return table|nil lib Loaded library or nil if failed
+---@return string|nil error Error message if failed
+local function try_load_library(path)
+	-- Check if file exists and is readable
 	if vim.fn.filereadable(path) ~= 1 then
 		return nil, "File not readable: " .. path
 	end
 
-	local loader, err = package.loadlib(path, symbol)
-	if not loader then
-		return nil, err
+	local symbol = "luaopen_libplayerone"
+
+	-- Attempt to load the library
+	local ok, result = pcall(function()
+		local loader = package.loadlib(path, symbol)
+		if not loader then
+			error("Failed to load library: " .. path)
+		end
+		return loader()
+	end)
+
+	if not ok then
+		return nil, tostring(result)
 	end
-	return loader(), nil
+
+	return result
 end
 
+---Initialize the binary system
+---@return boolean success Whether initialization succeeded
+function M.initialize()
+	-- Check system compatibility
+	if not system.get_target_triple() then
+		error(errors.format_error("unsupported_system"))
+	end
+
+	-- Get cached version info
+	local info = get_cached_version_info()
+
+	-- Log initialization state
+	vim.notify(
+		string.format(
+			"PlayerOne: Initializing binary system\n"
+				.. "  - Development build: %s\n"
+				.. "  - Current version: %s\n"
+				.. "  - Latest version: %s",
+			info.dev and "Yes" or "No",
+			info.current or "Not installed",
+			info.latest or "Unknown"
+		),
+		vim.log.levels.DEBUG
+	)
+
+	-- Always return true since errors will be thrown
+	return true
+end
+
+---Load the appropriate binary
+---@return table library The loaded library
 function M.load_binary()
-	local ext = system.get_lib_extension()
-	local prefix = system.get_lib_prefix()
+	-- Return cached library if available
+	if loaded_lib then
+		return loaded_lib
+	end
 
-	-- Build the fully qualified path to the development binary
-	local plugin_root = debug.getinfo(1).source:match("@?(.*/)")
-	local dev_binary = plugin_root .. "../../../target/release/" .. prefix .. "player_one" .. ext
+	-- Initialize binary system
+	M.initialize()
 
-	vim.notify("Checking dev binary at: " .. dev_binary, vim.log.levels.DEBUG)
+	-- Get version information
+	local info = get_cached_version_info()
 
-	-- Try loading development binary if it exists
-	if vim.fn.filereadable(dev_binary) == 1 then
-		local lib, err = load_lib(dev_binary, SYMBOL_NAME)
+	-- Try loading development binary first
+	if info.dev then
+		local dev_path = version.get_development_path()
+		local lib, err = try_load_library(dev_path)
+
 		if lib then
-			vim.notify("Successfully loaded dev binary", vim.log.levels.DEBUG)
+			vim.notify("PlayerOne: Using development build", vim.log.levels.INFO)
+			loaded_lib = lib
 			return lib
 		else
-			vim.notify("Failed to load dev binary: " .. err, vim.log.levels.WARN)
+			vim.notify("PlayerOne: Failed to load development build: " .. err, vim.log.levels.WARN)
 		end
 	end
 
-	-- Fallback: try installed binary from download location
-	local bin_dir = download.get_binary_dir()
-	local install_binary = bin_dir .. "/" .. prefix .. "player_one" .. ext
-
-	vim.notify("Checking installed binary at: " .. install_binary, vim.log.levels.DEBUG)
-
-	-- Ensure binary is downloaded
-	download.ensure_binary()
-
-	if vim.fn.filereadable(install_binary) == 1 then
-		local lib, err = load_lib(install_binary, SYMBOL_NAME)
-		if lib then
-			vim.notify("Successfully loaded installed binary", vim.log.levels.DEBUG)
-			return lib
-		else
-			vim.notify("Failed to load installed binary: " .. err, vim.log.levels.WARN)
+	-- Check if we need to download/update binary
+	if version.needs_update(info) then
+		local ok, err = pcall(download.ensure_binary, info.latest)
+		if not ok then
+			error(errors.format_error("binary_load_failed", err))
 		end
-	else
-		vim.notify("Installed binary not found at: " .. install_binary, vim.log.levels.WARN)
+		-- Invalidate version cache after download
+		version_info_cache.info = nil
 	end
 
-	error("Failed to load player-one binary")
+	-- Try loading installed binary
+	local install_path = version.get_install_path()
+	local lib, err = try_load_library(install_path)
+
+	if not lib then
+		error(errors.format_error("binary_load_failed", err))
+	end
+
+	loaded_lib = lib
+	return lib
 end
 
+---Clear the library cache
+---@return boolean success Whether cache was cleared
+function M.clear_cache()
+	loaded_lib = nil
+	version_info_cache = {
+		info = nil,
+		timestamp = 0,
+	}
+	return true
+end
+
+-- Export the loaded library directly
 return M.load_binary()

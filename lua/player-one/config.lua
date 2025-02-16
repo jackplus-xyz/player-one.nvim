@@ -11,6 +11,18 @@ local defaults = {
 	is_enabled = true,
 	min_interval = 0.05,
 	theme = "chiptune",
+	binary = {
+		auto_update = true,
+		cache_timeout = 3600,
+		download_timeout = 60,
+		verify_checksum = true,
+		use_development = true,
+		github_api_token = nil,
+		proxy = {
+			url = nil,
+			from_env = true,
+		},
+	},
 }
 
 --- Setup PlayerOne with the provided configuration
@@ -38,7 +50,9 @@ local defaults = {
 --- })
 ---]]
 function M.setup(options)
-	M.options = vim.tbl_deep_extend("force", defaults, options or {})
+	options = options or {}
+
+	M.options = vim.tbl_deep_extend("force", defaults, options)
 
 	State.setup(M.options)
 	Api.setup()
@@ -46,21 +60,27 @@ function M.setup(options)
 	if State.is_enabled then
 		Api.enable()
 	end
-
-	return {
-		setup = M.setup,
-
-		play = Api.play,
-		play_async = Api.play_async,
-		append = Api.append,
-		stop = Api.stop,
-
-		load_theme = Api.load_theme,
-
-		enable = Api.enable,
-		disable = Api.disable,
-		toggle = Api.toggle,
-	}
 end
+
+---Reload the binary
+---@return boolean success Whether reload succeeded
+function M.reload_binary()
+	local binary = require("player-one.binary")
+	binary.clear_cache()
+	return binary.load_binary() ~= nil
+end
+
+M.reload_binary = M.reload_binary
+
+M.play = Api.play
+M.play_async = Api.play_async
+M.append = Api.append
+M.stop = Api.stop
+
+M.load_theme = Api.load_theme
+
+M.enable = Api.enable
+M.disable = Api.disable
+M.toggle = Api.toggle
 
 return M
