@@ -17,6 +17,8 @@ local Config = require("player-one.config")
 ---@field reload_binary fun(): boolean
 local M = {}
 
-M = Config.setup()
+setmetatable(M, {
+	__index = Config,
+})
 
 return M
