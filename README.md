@@ -73,6 +73,39 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 
   ---@type PlayerOne.Theme|string Either a preset name or custom sounds table
   theme = "chiptune",
+
+  ---@type boolean Whether to print the debug message
+  debug = false,
+
+  ---@class PlayerOne.BinaryConfig
+  binary = {
+    -- Automatically download updates (default: true)
+    auto_update = true,
+
+    -- Version cache timeout in seconds (default: 3600)
+    cache_timeout = 3600,
+
+    -- Download timeout in seconds (default: 60)
+    download_timeout = 60,
+
+    -- Verify binary checksums (default: true)
+    verify_checksum = true,
+
+    -- Use development build if available (default: true)
+    use_development = true,
+
+    -- GitHub API token for higher rate limits (default: nil)
+    github_api_token = nil,
+
+    -- Proxy configuration
+    proxy = {
+      -- Proxy URL (default: nil)
+      url = nil,
+
+      -- Use system proxy settings (default: true)
+      from_env = true,
+    },
+  },
 }
 ```
 

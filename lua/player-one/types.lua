@@ -62,3 +62,4 @@
 ---@field theme string|PlayerOne.Theme Theme name or custom sounds table (default: "chiptune")
 ---@field min_interval number Minimum interval between sounds in seconds (default: 0.05)
 ---@field binary PlayerOne.BinaryConfig Binary management configuration
+---@field debug boolean Whether to print the debug message
