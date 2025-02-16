@@ -6,6 +6,11 @@ A plugin that adds 8-bit sound effects to Neovim.
 
 ## Demo
 
+> [!NOTE]
+> Make sure you have sounds on!
+
+https://github.com/user-attachments/assets/f72a038f-507c-49cc-9506-37494cbf8ed8
+
 ## Overview
 
 `player-one.nvim` is a plugin that generates 8-bit sound effects on the fly, no audio files required! It enhances your editing experience with retro-style audio feedback for various Neovim events.
