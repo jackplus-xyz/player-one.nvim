@@ -114,16 +114,24 @@ end
 ---@return table library The loaded library
 ---@throws string When binary cannot be loaded
 function M.load_binary()
-	-- Return cached library if available
 	if loaded_lib then
 		return loaded_lib
 	end
 
-	-- Initialize binary system (will throw on error)
 	M.init()
 
 	-- Get version information (will throw on error)
 	local info = get_cached_version_info()
+
+	if not info.current and info.latest then
+		local ok, err = pcall(download.ensure_binary, info.latest)
+		if not ok then
+			error(errors.format_error("binary_load_failed", "No binary installed and download failed: " .. err))
+		end
+		-- Reload version info after download
+		version_info_cache.info = nil
+		info = get_cached_version_info()
+	end
 
 	-- Try loading development binary first
 	if info.dev then
