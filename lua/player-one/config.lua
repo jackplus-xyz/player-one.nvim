@@ -23,6 +23,7 @@ local defaults = {
 			from_env = true,
 		},
 	},
+	debug = false,
 }
 
 --- Setup PlayerOne with the provided configuration
