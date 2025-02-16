@@ -120,10 +120,10 @@ function M.load_binary()
 
 	M.init()
 
-	-- Get version information (will throw on error)
 	local info = get_cached_version_info()
 
 	if not info.current and info.latest then
+		vim.notify("PlayerOne: No binary installed. Attempting to download...", vim.log.levels.INFO)
 		local ok, err = pcall(download.ensure_binary, info.latest)
 		if not ok then
 			error(errors.format_error("binary_load_failed", "No binary installed and download failed: " .. err))
@@ -137,24 +137,13 @@ function M.load_binary()
 	if info.dev then
 		local dev_path = version.get_development_path()
 		local lib, err = try_load_library(dev_path)
-
 		if lib then
 			vim.notify("PlayerOne: Using development build", vim.log.levels.INFO)
 			loaded_lib = lib
 			return lib
 		else
-			vim.notify(string.format("PlayerOne: Failed to load development build: %s", err), vim.log.levels.WARN)
+			vim.notify("PlayerOne: Failed to load development build: " .. err, vim.log.levels.WARN)
 		end
-	end
-
-	-- Check if we need to download/update binary
-	if version.needs_update(info) then
-		local ok, err = pcall(download.ensure_binary, info.latest)
-		if not ok then
-			error(errors.format_error("binary_load_failed", string.format("Failed to download binary: %s", err)))
-		end
-		-- Invalidate version cache after download
-		version_info_cache.info = nil
 	end
 
 	-- Try loading installed binary
@@ -162,12 +151,7 @@ function M.load_binary()
 	local lib, err = try_load_library(install_path)
 
 	if not lib then
-		error(
-			errors.format_error(
-				"binary_load_failed",
-				string.format("Failed to load installed binary at %s: %s", install_path, err)
-			)
-		)
+		error(errors.format_error("binary_load_failed", "Failed to load binary at " .. install_path .. ": " .. err))
 	end
 
 	loaded_lib = lib
