@@ -103,6 +103,19 @@ To create your own theme, see [Theme](https://github.com/jackplus-xyz/player-one
 | `:PlayerOneToggle`       | Toggle sound theme                    |
 | `:PlayerOneLoad {theme}` | Load a theme (chiptune/crystal/synth) |
 
+## Roadmap
+
+- [ ] Performance optimizations
+  - [ ] Implement caching for frequently used sounds
+- [ ] Documentation Improvements
+  - [ ] Add detailed API reference
+  - [ ] Include code examples
+- [ ] Test Coverage Expansion
+  - [ ] Unit tests for core components
+  - [ ] Integration tests
+  - [ ] Performance benchmarks
+- [ ] Multi-track melody playback
+
 ## Credits
 
 ### Resources
