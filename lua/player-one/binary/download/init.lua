@@ -4,6 +4,7 @@ local files = require("player-one.binary.download.files")
 local paths = require("player-one.binary.paths")
 local errors = require("player-one.binary.errors")
 
+-- FIXME: Binary error on first installation on Linux (Fedora) #12
 local M = {}
 
 ---Get download URLs for binary and checksum
@@ -115,7 +116,7 @@ function M.ensure_binary(ver)
 		error(errors.format_error("download_failed", err))
 	end
 
-	vim.notify(string.format("PlayerOne: Binary v%s downloaded and installed successfully", ver), vim.log.levels.INFO)
+	vim.notify(string.format("PlayerOne: Binary %s downloaded and installed successfully", ver), vim.log.levels.INFO)
 end
 
 return M
