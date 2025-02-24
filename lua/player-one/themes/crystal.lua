@@ -88,7 +88,7 @@ return {
 				volume = 0.5,
 			},
 		},
-		callback = "play_async",
+		callback = "play_and_wait",
 	},
 	{
 		event = "BufWritePost",

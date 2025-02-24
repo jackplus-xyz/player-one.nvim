@@ -73,7 +73,7 @@ function M.reload_binary()
 end
 
 M.play = Api.play
-M.play_async = Api.play_async
+M.play_and_wait = Api.play_and_wait
 M.append = Api.append
 M.stop = Api.stop
 

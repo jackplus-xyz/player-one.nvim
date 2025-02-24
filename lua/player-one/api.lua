@@ -42,11 +42,11 @@ end
 ---Play a sound and wait for it to complete
 ---@param params PlayerOne.SoundParams Sound parameters
 ---@return boolean|nil success Whether the sound was played successfully
-function M.play_async(params)
+function M.play_and_wait(params)
 	if not State.is_enabled then
 		return
 	end
-	local ok, err = pcall(Utils.play_async, params)
+	local ok, err = pcall(Utils.play_and_wait, params)
 	return handle_error(ok, err)
 end
 

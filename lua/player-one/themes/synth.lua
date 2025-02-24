@@ -106,7 +106,7 @@ return {
 			},
 		},
 		callback = function(sound)
-			Utils.play_async(sound)
+			Utils.play_and_wait(sound)
 		end,
 	},
 	--- @type PlayerOne.Sound
