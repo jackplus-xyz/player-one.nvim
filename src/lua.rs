@@ -47,7 +47,7 @@ fn register_play_async(lua: &Lua, exports: &LuaTable, player: Arc<Player>) -> Lu
         "play_async",
         lua.create_function(move |_, params: SoundParams| {
             player
-                .play_async(params)
+                .play_and_wait(params)
                 .map_err(|e| mlua::Error::external(e.to_string()))
         })?,
     )
