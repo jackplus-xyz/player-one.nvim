@@ -13,7 +13,7 @@ pub fn create_lua_module(lua: &Lua) -> LuaResult<LuaTable> {
 
     register_play(lua, &exports, player.clone())?;
     register_append(lua, &exports, player.clone())?;
-    register_play_async(lua, &exports, player.clone())?;
+    register_play_and_wait(lua, &exports, player.clone())?;
     register_play_preset(lua, &exports, player.clone())?;
     register_stop(lua, &exports, player)?;
 
@@ -42,9 +42,9 @@ fn register_append(lua: &Lua, exports: &LuaTable, player: Arc<Player>) -> LuaRes
     )
 }
 
-fn register_play_async(lua: &Lua, exports: &LuaTable, player: Arc<Player>) -> LuaResult<()> {
+fn register_play_and_wait(lua: &Lua, exports: &LuaTable, player: Arc<Player>) -> LuaResult<()> {
     exports.set(
-        "play_async",
+        "play_and_wait",
         lua.create_function(move |_, params: SoundParams| {
             player
                 .play_and_wait(params)

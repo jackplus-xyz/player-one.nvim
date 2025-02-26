@@ -288,7 +288,7 @@ end
 
 ---Play a sound and wait for completion
 ---@param params PlayerOne.SoundParams|PlayerOne.SoundParams[]|string Sound parameters
----@return any Result from async sound playback
+---@return any Result from play_and_wait playback
 function M.play_and_wait(params)
 	return process_sound_params(params, Lib.play_and_wait)
 end
