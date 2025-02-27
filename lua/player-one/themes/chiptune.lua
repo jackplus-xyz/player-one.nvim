@@ -47,7 +47,7 @@ return {
 			{ wave_type = 1, base_freq = 1046.50, env_attack = 0.0, env_sustain = 0.02, env_decay = 0.1 },
 			{ wave_type = 1, base_freq = 1318.51, env_attack = 0.0, env_sustain = 0.02, env_decay = 0.08 },
 		},
-		callback = "play_async",
+		callback = "play_and_wait",
 	},
 	{
 		event = "BufWritePost",

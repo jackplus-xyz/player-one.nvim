@@ -53,7 +53,8 @@ local defaults = {
 function M.setup(options)
 	options = options or {}
 
-	M.options = vim.tbl_deep_extend("force", defaults, options)
+	M.options = vim.deepcopy(defaults)
+	M.options = vim.tbl_deep_extend("force", M.options, options)
 
 	State.setup(M.options)
 	Api.setup()
@@ -71,10 +72,8 @@ function M.reload_binary()
 	return binary.load_binary() ~= nil
 end
 
-M.reload_binary = M.reload_binary
-
 M.play = Api.play
-M.play_async = Api.play_async
+M.play_and_wait = Api.play_and_wait
 M.append = Api.append
 M.stop = Api.stop
 

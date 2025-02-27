@@ -1,0 +1,113 @@
+name: Build Library
+
+on:
+  workflow_call:
+    inputs:
+      upload_artifacts:
+        required: true
+        type: boolean
+        default: true
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    env:
+      DEBIAN_FRONTEND: noninteractive
+    strategy:
+      matrix:
+        include:
+          # Linux builds
+          - os: ubuntu-20.04
+            target: x86_64-unknown-linux-gnu
+            artifact_name: target/x86_64-unknown-linux-gnu/release/libplayer_one.so
+            extension: so
+          - os: ubuntu-20.04
+            target: aarch64-unknown-linux-gnu
+            artifact_name: target/aarch64-unknown-linux-gnu/release/libplayer_one.so
+            extension: so
+
+          # macOS builds
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            artifact_name: target/x86_64-apple-darwin/release/libplayer_one.dylib
+            extension: dylib
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact_name: target/aarch64-apple-darwin/release/libplayer_one.dylib
+            extension: dylib
+
+          # Windows builds
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact_name: target/x86_64-pc-windows-msvc/release/player_one.dll
+            extension: dll
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Rust
+        run: |
+          rustup toolchain install nightly
+          rustup default nightly
+          rustup target add ${{ matrix.target }}
+          rustup component add rust-src
+
+      - name: Build for Linux
+        if: contains(matrix.os, 'ubuntu')
+        env:
+          CROSS_CONTAINER_ENGINE_NO_BUILDKIT: 1
+          CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_RUSTFLAGS: "-C target-feature=+crt-static"
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_RUSTFLAGS: "-C target-feature=+crt-static"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y musl musl-dev musl-tools
+          cargo install cross --git https://github.com/cross-rs/cross
+          CROSS_CONTAINER_ENGINE_NO_BUILDKIT=1 cross build --release --target ${{ matrix.target }}
+          mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.${{ matrix.extension }}"
+
+      - name: Build for macOS
+        if: contains(matrix.os, 'macos')
+        env:
+          LIBRARY_PATH: /usr/local/lib:/opt/homebrew/lib
+          DYLD_LIBRARY_PATH: /usr/local/lib:/opt/homebrew/lib
+          PKG_CONFIG_PATH: /usr/local/opt/luajit/lib/pkgconfig:/opt/homebrew/opt/luajit/lib/pkgconfig
+        run: |
+          if [[ "${{ matrix.target }}" == "x86_64-apple-darwin" ]]; then
+            # Install x86_64 homebrew if it doesn't exist
+            if [ ! -f /usr/local/bin/brew ]; then
+              arch -x86_64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+            fi
+            # Install and set up for x86_64
+            arch -x86_64 /usr/local/bin/brew install luajit
+            export LIBRARY_PATH="/usr/local/lib"
+            export DYLD_LIBRARY_PATH="/usr/local/lib"
+            export PKG_CONFIG_PATH="/usr/local/opt/luajit/lib/pkgconfig"
+            MACOSX_DEPLOYMENT_TARGET="13" RUSTFLAGS="-L /usr/local/opt/luajit/lib" cargo build --release --target ${{ matrix.target }}
+          else
+            # Install and set up for arm64
+            arch -arm64 /opt/homebrew/bin/brew install luajit
+            export LIBRARY_PATH="/opt/homebrew/lib"
+            export DYLD_LIBRARY_PATH="/opt/homebrew/lib"
+            export PKG_CONFIG_PATH="/opt/homebrew/opt/luajit/lib/pkgconfig"
+            MACOSX_DEPLOYMENT_TARGET="13" RUSTFLAGS="-L /opt/homebrew/opt/luajit/lib" cargo build --release --target ${{ matrix.target }}
+          fi
+
+          mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.${{ matrix.extension }}"
+
+      - name: Build for Windows
+        if: contains(matrix.os, 'windows')
+        run: |
+          cargo build --release --target ${{ matrix.target }}
+          mv "${{ matrix.artifact_name }}" "${{ matrix.target }}.${{ matrix.extension }}"
+
+      - name: Upload artifacts
+        if: inputs.upload_artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}
+          path: ${{ matrix.target }}.${{ matrix.extension }}

@@ -194,14 +194,14 @@ fn test_json_params() {
     }"#;
 
     let params = SoundParams::from_json(json_params).expect("Should parse JSON successfully");
-    assert!(player.play_async(params).is_ok());
+    assert!(player.play_and_wait(params).is_ok());
 
     let invalid_json = r#"{ invalid json }"#;
     assert!(SoundParams::from_json(invalid_json).is_err());
 
     let incomplete_json = r#"{ "wave_type": 1 }"#;
     let params = SoundParams::from_json(incomplete_json).expect("Should parse JSON successfully");
-    assert!(player.play_async(params).is_ok());
+    assert!(player.play_and_wait(params).is_ok());
 }
 
 #[test]

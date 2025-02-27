@@ -1,3 +1,5 @@
+local/
+
 #--------------------------------------------------#
 # The following was generated with gitignore.nvim: #
 #--------------------------------------------------#
@@ -102,6 +104,3 @@ Temporary Items
 # iCloud generated files
 *.icloud
 .aider*
-
-# Others
-notes/

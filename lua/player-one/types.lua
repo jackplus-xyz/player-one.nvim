@@ -34,7 +34,7 @@
 ---@alias PlayCallback
 ---| "play" # Play immediately, interrupting current sound
 ---| "append" # Queue sound to play after current sounds
----| "play_async" # Play and wait for completion
+---| "play_and_wait" # Play and wait for completion
 ---| fun(sound: PlayerOne.SoundParams): any # Custom callback function
 
 ---@class PlayerOne.Sound

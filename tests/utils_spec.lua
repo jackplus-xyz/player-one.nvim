@@ -185,7 +185,7 @@ describe("Utils", function()
 		  ]]
 
 			local ok_table, err_table = pcall(function()
-				Utils.play_async(table_params)
+				Utils.play_and_wait(table_params)
 			end)
 			assert.is_true(
 				ok_table,
@@ -193,7 +193,7 @@ describe("Utils", function()
 			)
 
 			local ok_json, err_json = pcall(function()
-				Utils.play_async(json_params)
+				Utils.play_and_wait(json_params)
 			end)
 			assert.is_true(
 				ok_json,
@@ -216,7 +216,7 @@ describe("Utils", function()
 			for _, volume in ipairs(volumes) do
 				params.sound_vol = volume
 				local ok, err = pcall(function()
-					Utils.play_async(params)
+					Utils.play_and_wait(params)
 				end)
 				assert.is_true(
 					ok,
@@ -262,7 +262,7 @@ describe("Utils", function()
 				local json_str = vim.json.encode(params)
 
 				local ok, err = pcall(function()
-					Utils.play_async(json_str)
+					Utils.play_and_wait(json_str)
 				end)
 
 				assert.is_true(ok, string.format("Failed to play sound at volume %f: %s", volume, tostring(err)))

@@ -217,8 +217,8 @@ function M._create_autocmds(autocmd, sound, callback)
 							M.append(sound)
 						elseif callback == "play" then
 							M.play(sound)
-						elseif callback == "play_async" then
-							M.play_async(sound)
+						elseif callback == "play_and_wait" then
+							M.play_and_wait(sound)
 						else
 							error("Invalid callback string: " .. callback)
 						end
@@ -288,9 +288,9 @@ end
 
 ---Play a sound and wait for completion
 ---@param params PlayerOne.SoundParams|PlayerOne.SoundParams[]|string Sound parameters
----@return any Result from async sound playback
-function M.play_async(params)
-	return process_sound_params(params, Lib.play_async)
+---@return any Result from play_and_wait playback
+function M.play_and_wait(params)
+	return process_sound_params(params, Lib.play_and_wait)
 end
 
 ---Stop all currently playing sounds
