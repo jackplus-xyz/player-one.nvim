@@ -47,7 +47,26 @@ function M.get_git_info()
 	}
 end
 
--- Rest of the functions remain the same, but use the new paths
+---Resolves plugin version using git information (tags/SHA) with fallback to version file
+---@return string|nil # Current plugin version from git tag, SHA (7 chars), or version file
+---@return string? error # Error message if version cannot be determined
+function M.get_current_plugin_version()
+	local git_info = M.get_git_info()
+	-- Prefer release tags over commit SHAs
+	if git_info then
+		if git_info.tag then
+			-- Use tag if available (e.g. v1.0.0)
+			return git_info.tag
+		elseif git_info.sha then
+			-- Only use SHA as fallback
+			return git_info.sha:sub(1, 7)
+		end
+	end
+	return M.get_current_version()
+end
+
+---Reads version string from version file
+---@return string|nil version Version string from file or nil if file doesn't exist/is empty
 function M.get_current_version()
 	local version_file = M.get_version_file()
 	if vim.fn.filereadable(version_file) == 1 then
@@ -59,6 +78,7 @@ function M.get_current_version()
 	return nil
 end
 
+---@return string|nil version The latest release version from GitHub or nil if not found
 function M.get_latest_version()
 	local cache_file = vim.fn.stdpath("cache") .. "/player-one-version"
 	local current_time = os.time()

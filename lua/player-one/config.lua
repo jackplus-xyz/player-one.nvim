@@ -1,9 +1,6 @@
 --- Configuration module for PlayerOne
 ---@module 'player-one.config'
 
-local Api = require("player-one.api")
-local State = require("player-one.state")
-
 local M = {}
 
 ---@type PlayerOne.Config
@@ -52,12 +49,14 @@ local defaults = {
 ---]]
 function M.setup(options)
 	options = options or {}
-
 	M.options = vim.deepcopy(defaults)
 	M.options = vim.tbl_deep_extend("force", M.options, options)
 
+	local State = require("player-one.state")
+	local Api = require("player-one.api")
 	State.setup(M.options)
 	Api.setup()
+	setmetatable(M, Api)
 
 	if State.is_enabled then
 		Api.enable()
@@ -71,16 +70,5 @@ function M.reload_binary()
 	binary.clear_cache()
 	return binary.load_binary() ~= nil
 end
-
-M.play = Api.play
-M.play_and_wait = Api.play_and_wait
-M.append = Api.append
-M.stop = Api.stop
-
-M.load_theme = Api.load_theme
-
-M.enable = Api.enable
-M.disable = Api.disable
-M.toggle = Api.toggle
 
 return M

@@ -15,6 +15,16 @@ function M.get_download_urls(ver)
 		error(errors.format_error("download_failed", "No version specified"))
 	end
 
+	if ver:match("^%x+$") then
+		-- Version appears to be a commit SHA
+		error(
+			errors.format_error(
+				"download_failed",
+				"Cannot download binary for commit SHA. Please use a release version."
+			)
+		)
+	end
+
 	local triple = system.get_target_triple()
 	if not triple then
 		error(errors.format_error("unsupported_system", "Could not determine system triple"))
@@ -90,7 +100,7 @@ function M.ensure_binary(ver)
 	end
 	urls = err
 
-	vim.notify(string.format("PlayerOne: Downloading v%s binary...\nFrom: %s", ver, urls.binary), vim.log.levels.INFO)
+	vim.notify(string.format("PlayerOne: Downloading %s binary...\nFrom: %s", ver, urls.binary), vim.log.levels.INFO)
 
 	-- Download and install with proper cleanup
 	ok, err = pcall(function()
@@ -134,13 +144,11 @@ end
 ---@return boolean success True if cache was cleared successfully
 ---@return string? error Error message if clearing failed
 function M.clear_cache(force)
-	local release_dir = paths.get_release_dir()
+	vim.notify("PlayerOne: Clearing cache", vim.log.levels.INFO)
 	local binary_path = paths.get_binary_path()
 	local temp_path = paths.get_temp_path()
 	local checksum_path = paths.get_checksum_path()
 	local version_path = paths.get_version_path()
-
-	local errors = {}
 
 	-- Remove temporary files if they exist
 	if vim.fn.filereadable(temp_path) == 1 then
@@ -187,6 +195,25 @@ end
 ---@param ver string Version to download
 ---@param clear_cache boolean? Whether to clear cache before downloading (defaults to false)
 function M.update_binary(ver, clear_cache)
+	-- Get latest version if not specified
+	if not ver then
+		local latest = version.get_latest_version()
+		if not latest then
+			error(errors.format_error("download_failed", "Could not determine latest version"))
+		end
+	end
+
+	-- Ensure version is a valid release tag
+	if ver:match("^%x+$") then
+		-- Try to get latest version instead
+		local latest = version.get_latest_version()
+		if latest then
+			ver = latest
+		else
+			error(errors.format_error("download_failed", "Cannot use commit SHA. No release version available."))
+		end
+	end
+
 	if clear_cache then
 		local ok, err = M.clear_cache(true)
 		if not ok then
