@@ -146,6 +146,7 @@ return {
 			duty = 0.3,
 			lpf_freq = 2000,
 		},
+		callback = "play",
 	},
 	--- @type PlayerOne.Sound
 	{
@@ -209,5 +210,6 @@ return {
 			duty = 0.3,
 			lpf_freq = 2000,
 		},
+		callback = "play",
 	},
 }

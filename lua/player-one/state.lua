@@ -22,10 +22,6 @@ function M.setup(options)
 	---@type string[] List of available theme names
 	M.themes = { "chiptune", "synth", "crystal" }
 
-	if type(options.theme) == "table" then
-		table.insert(M.themes, "user")
-	end
-
 	-- Create autocmd group for plugin events
 	---@type number Autocmd group ID
 	M.group = vim.api.nvim_create_augroup("PlayerOne", { clear = true })

@@ -11,19 +11,6 @@ local defaults = {
 	is_enabled = true,
 	min_interval = 0.05,
 	theme = "chiptune",
-	binary = {
-		auto_update = true,
-		cache_timeout = 3600,
-		download_timeout = 60,
-		verify_checksum = true,
-		use_development = true,
-		github_api_token = nil,
-		proxy = {
-			url = nil,
-			from_env = true,
-		},
-	},
-	debug = false,
 }
 
 --- Setup PlayerOne with the provided configuration
@@ -62,6 +49,21 @@ function M.setup(options)
 	if State.is_enabled then
 		Api.enable()
 	end
+
+	return {
+		setup = M.setup,
+
+		play = Api.play,
+		play_async = Api.play_async,
+		append = Api.append,
+		stop = Api.stop,
+
+		load_theme = Api.load_theme,
+
+		enable = Api.enable,
+		disable = Api.disable,
+		toggle = Api.toggle,
+	}
 end
 
 ---Reload the binary

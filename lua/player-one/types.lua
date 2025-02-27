@@ -44,22 +44,7 @@
 
 ---@class PlayerOne.Theme PlayerOne.Sound[] Array of sound configurations
 
----@class PlayerOne.BinaryConfig
----@field auto_update boolean Automatically download updates
----@field cache_timeout number Version cache timeout in seconds
----@field download_timeout number Download timeout in seconds
----@field verify_checksum boolean Verify binary checksums
----@field use_development boolean Use development build if available
----@field github_api_token string|nil GitHub API token for higher rate limits
----@field proxy PlayerOne.ProxyConfig Proxy configuration
-
----@class PlayerOne.ProxyConfig
----@field url string|nil Proxy URL
----@field from_env boolean Use system proxy settings
-
 ---@class PlayerOne.Config
 ---@field is_enabled boolean Whether the plugin is enabled (default: true)
 ---@field theme string|PlayerOne.Theme Theme name or custom sounds table (default: "chiptune")
 ---@field min_interval number Minimum interval between sounds in seconds (default: 0.05)
----@field binary PlayerOne.BinaryConfig Binary management configuration
----@field debug boolean Whether to print the debug message

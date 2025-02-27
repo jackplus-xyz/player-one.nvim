@@ -115,23 +115,14 @@ function M.setup()
 			M.load_theme(theme)
 			vim.notify(theme .. " Loaded")
 		else
-			vim.ui.select(State.themes, {
-				prompt = "Select Player One theme:",
-				format_item = function(item)
-					return item
-				end,
-			}, function(choice)
-				if choice then
-					M.load_theme(choice)
-					vim.notify(choice .. " Loaded")
-				end
-			end)
+			-- TODO: add picker
+			M.load_theme()
 		end
 	end, {
 		nargs = "?",
 		desc = "Load Player One theme",
 		complete = function()
-			return State.themes
+			return { "chiptune", "synth", "crystal" }
 		end,
 	})
 end
