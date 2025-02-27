@@ -152,6 +152,8 @@ To create your own theme, see [Theme](https://github.com/jackplus-xyz/player-one
 | `:PlayerOneDisable`      | Disable sound theme                   |
 | `:PlayerOneToggle`       | Toggle sound theme                    |
 | `:PlayerOneLoad {theme}` | Load a theme (chiptune/crystal/synth) |
+| `:PlayerOneClearCache`   | Clear the PlayerOne binary cache      |
+| `:PlayerOneUpdate`       | Update the PlayerOne binary           |
 
 ## Roadmap
 

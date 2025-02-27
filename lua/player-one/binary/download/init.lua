@@ -56,6 +56,16 @@ end
 ---Safely download and install binary
 ---@param ver string Version to download
 function M.ensure_binary(ver)
+	local config = require("player-one.config").options
+
+	if not config.binary.auto_update then
+		-- Skip version checks, only download if binary doesn't exist
+		local binary_path = paths.get_binary_path()
+		if vim.fn.filereadable(binary_path) == 1 then
+			return true
+		end
+	end
+
 	if not ver then
 		error(errors.format_error("download_failed", "No version specified"))
 	end
@@ -117,6 +127,74 @@ function M.ensure_binary(ver)
 	end
 
 	vim.notify(string.format("PlayerOne: Binary %s downloaded and installed successfully", ver), vim.log.levels.INFO)
+end
+
+---Clear downloaded binary cache
+---@param force boolean? Force removal of current binary too (defaults to false)
+---@return boolean success True if cache was cleared successfully
+---@return string? error Error message if clearing failed
+function M.clear_cache(force)
+	local release_dir = paths.get_release_dir()
+	local binary_path = paths.get_binary_path()
+	local temp_path = paths.get_temp_path()
+	local checksum_path = paths.get_checksum_path()
+	local version_path = paths.get_version_path()
+
+	local errors = {}
+
+	-- Remove temporary files if they exist
+	if vim.fn.filereadable(temp_path) == 1 then
+		local ok, err = pcall(files.delete_file, temp_path)
+		if not ok then
+			table.insert(errors, string.format("Failed to delete temp file: %s", err))
+		end
+	end
+
+	if vim.fn.filereadable(checksum_path) == 1 then
+		local ok, err = pcall(files.delete_file, checksum_path)
+		if not ok then
+			table.insert(errors, string.format("Failed to delete checksum file: %s", err))
+		end
+	end
+
+	-- If force is true, also remove current binary and version file
+	if force then
+		if vim.fn.filereadable(binary_path) == 1 then
+			local ok, err = pcall(files.delete_file, binary_path)
+			if not ok then
+				table.insert(errors, string.format("Failed to delete binary file: %s", err))
+			end
+		end
+
+		if vim.fn.filereadable(version_path) == 1 then
+			local ok, err = pcall(files.delete_file, version_path)
+			if not ok then
+				table.insert(errors, string.format("Failed to delete version file: %s", err))
+			end
+		end
+	end
+
+	-- Return results
+	if #errors > 0 then
+		return false, table.concat(errors, "\n")
+	end
+
+	vim.notify("PlayerOne: Cache cleared successfully", vim.log.levels.INFO)
+	return true
+end
+
+---Update binary to specified version with option to clear cache first
+---@param ver string Version to download
+---@param clear_cache boolean? Whether to clear cache before downloading (defaults to false)
+function M.update_binary(ver, clear_cache)
+	if clear_cache then
+		local ok, err = M.clear_cache(true)
+		if not ok then
+			vim.notify("PlayerOne: Cache clearing had issues: " .. err, vim.log.levels.WARN)
+		end
+	end
+
+	M.ensure_binary(ver)
 end
 
 return M

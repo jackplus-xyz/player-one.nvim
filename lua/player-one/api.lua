@@ -17,6 +17,15 @@ local function handle_error(ok, err)
 	return true
 end
 
+function M.clear_cache(force)
+	return require("player-one.binary.download").clear_cache(force)
+end
+
+function M.update()
+	local version = require("player-one.binary.version").get_current_plugin_version()
+	return require("player-one.binary.download").update_binary(version, true)
+end
+
 ---Play a sound immediately, interrupting any currently playing sounds
 ---@param params PlayerOne.SoundParams Sound parameters
 ---@return boolean|nil success Whether the sound was played successfully
@@ -109,6 +118,10 @@ function M.setup()
 	vim.api.nvim_create_user_command("PlayerOneEnable", M.enable, { desc = "Enable Player One" })
 	vim.api.nvim_create_user_command("PlayerOneDisable", M.disable, { desc = "Disable Player One" })
 	vim.api.nvim_create_user_command("PlayerOneToggle", M.toggle, { desc = "Toggle Player One" })
+	vim.api.nvim_create_user_command("PlayerOneClearCache", function(opts)
+		M.clear_cache(opts.bang)
+	end, { desc = "Clear PlayerOne binary cache", bang = true })
+	vim.api.nvim_create_user_command("PlayerOneUpdate", M.update, { desc = "Update PlayerOne binary" })
 	vim.api.nvim_create_user_command("PlayerOneLoad", function(opts)
 		local theme = opts.args
 		if theme ~= "" then
