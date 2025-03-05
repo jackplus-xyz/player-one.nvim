@@ -30,6 +30,12 @@ https://github.com/user-attachments/assets/f72a038f-507c-49cc-9506-37494cbf8ed8
 
 ### System Support Status
 
+> [!WARNING]
+> This plugin is currently in beta. If you encounter any issues, please:
+>
+> 1. Run `:checkhealth player-one` and copy the output
+> 2. [Open an issue](https://github.com/jackplus-xyz/player-one.nvim/issues/new) with the health check results and steps to reproduce
+
 | Operating System | Status | Notes                        |
 | ---------------- | ------ | ---------------------------- |
 | macOS            | ✅     | Tested on macOS Sequoia 15.2 |
