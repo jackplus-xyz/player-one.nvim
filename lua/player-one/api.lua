@@ -1,5 +1,5 @@
 local Themes = require("player-one.themes")
-local State = require("player-one.state")
+local Config = require("player-one.config")
 local Utils = require("player-one.utils")
 
 --- Player One API module
@@ -30,7 +30,7 @@ end
 ---@param params PlayerOne.SoundParams Sound parameters
 ---@return boolean|nil success Whether the sound was played successfully
 function M.play(params)
-	if not State.is_enabled then
+	if not Config.is_enabled then
 		return
 	end
 	local ok, err = pcall(Utils.play, params)
@@ -41,7 +41,7 @@ end
 ---@param params PlayerOne.SoundParams Sound parameters
 ---@return boolean|nil success Whether the sound was queued successfully
 function M.append(params)
-	if not State.is_enabled then
+	if not Config.is_enabled then
 		return
 	end
 	local ok, err = pcall(Utils.append, params)
@@ -52,7 +52,7 @@ end
 ---@param params PlayerOne.SoundParams Sound parameters
 ---@return boolean|nil success Whether the sound was played successfully
 function M.play_and_wait(params)
-	if not State.is_enabled then
+	if not Config.is_enabled then
 		return
 	end
 	local ok, err = pcall(Utils.play_and_wait, params)
@@ -62,7 +62,7 @@ end
 ---Stop all currently playing sounds
 ---@return boolean|nil success Whether the stop operation succeeded
 function M.stop()
-	if not State.is_enabled then
+	if not Config.is_enabled then
 		return
 	end
 	local ok, err = pcall(Utils.stop)
@@ -73,7 +73,7 @@ end
 ---@param theme string|PlayerOne.Theme|nil Theme name or custom theme table
 ---@return boolean|nil success Whether the theme was loaded successfully
 function M.load_theme(theme)
-	if not State.is_enabled then
+	if not Config.is_enabled then
 		return
 	end
 	local ok, err = pcall(Utils.load_theme, theme)
@@ -84,7 +84,7 @@ end
 ---@return boolean success Whether enable succeeded
 function M.enable()
 	local ok, err = pcall(function()
-		State.is_enabled = true
+		Config.is_enabled = true
 		Themes.setup()
 	end)
 	return handle_error(ok, err)
@@ -94,7 +94,7 @@ end
 ---@return boolean success Whether disable succeeded
 function M.disable()
 	local ok, err = pcall(function()
-		State.is_enabled = false
+		Config.is_enabled = false
 		Utils.clear_autocmds()
 		Utils.stop()
 	end)
@@ -103,7 +103,7 @@ end
 
 ---Toggle the plugin enabled state
 function M.toggle()
-	if State.is_enabled then
+	if Config.is_enabled then
 		M.disable()
 		vim.notify("Disabled Player One", vim.log.levels.INFO)
 	else
@@ -128,7 +128,7 @@ function M.setup()
 			M.load_theme(theme)
 			vim.notify(theme .. " Loaded")
 		else
-			vim.ui.select(State.themes, {
+			vim.ui.select(Config.themes, {
 				prompt = "Select Player One theme:",
 				format_item = function(item)
 					return item
@@ -144,7 +144,7 @@ function M.setup()
 		nargs = "?",
 		desc = "Load Player One theme",
 		complete = function()
-			return State.themes
+			return Config.themes
 		end,
 	})
 end

@@ -1,10 +1,10 @@
-local State = require("player-one.state")
+local Config = require("player-one.config")
 local Utils = require("player-one.utils")
 
 local M = {}
 
 function M.setup()
-	local theme = State.theme
+	local theme = Config.theme
 
 	if not theme or theme == "" or theme == {} then
 		return
@@ -14,7 +14,7 @@ function M.setup()
 		error("themes parameter must be a table or string")
 	end
 
-	State.curr_theme = theme
+	Config.curr_theme = theme
 	Utils.load_theme(theme)
 end
 

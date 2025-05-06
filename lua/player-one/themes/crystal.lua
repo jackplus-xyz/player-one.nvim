@@ -1,7 +1,7 @@
 --- @brief Crystal-style sound theme with pure sine waves and ethereal tones
 
 local Utils = require("player-one.utils")
-local State = require("player-one.state")
+local Config = require("player-one.config")
 
 local M = {}
 
@@ -55,7 +55,7 @@ return {
 		callback = function(sound)
 			Utils.append(sound)
 			vim.defer_fn(function()
-				State._is_cursormoved_enabled = true
+				Config._is_cursormoved_enabled = true
 				setup_cursormoved()
 			end, 1000)
 		end,
