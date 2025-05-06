@@ -15,7 +15,7 @@ local defaults = {
     is_enabled = true,
     min_interval = 0.05,
     theme = "chiptune",
-    master_volume = 1.0,
+    master_volume = 0.5,
     binary = {
         auto_update = true,
         cache_timeout = 3600,
@@ -73,31 +73,31 @@ function M.setup(options)
     options = options or {}
     M.options = vim.deepcopy(defaults)
     M.options = vim.tbl_deep_extend("force", M.options, options)
-    
+
     -- Copy options to top level for direct access
     for k, v in pairs(M.options) do
         M[k] = v
     end
-    
+
     -- Handle master_volume validation
     if options.master_volume ~= nil then
         M.master_volume = math.max(0.0, math.min(1.0, options.master_volume))
     end
-    
+
     -- Handle theme setup
     if options.theme then
         M.curr_theme = options.theme
     end
-    
+
     -- Add user theme if a custom theme table was provided
     if type(options.theme) == "table" then
         table.insert(M.themes, "user")
     end
-    
+
     -- Create autocmd group for plugin events
     ---@type number Autocmd group ID
     M.group = vim.api.nvim_create_augroup("PlayerOne", { clear = true })
-    
+
     local Api = require("player-one.api")
     Api.setup()
     setmetatable(M, Api)
