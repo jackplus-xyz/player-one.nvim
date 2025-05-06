@@ -29,7 +29,7 @@
 ---@field repeat_speed? number Sound repeat frequency in Hz
 ---@field arp_speed? number Time between arpeggio notes in seconds
 ---@field arp_mod? number Frequency multiplier for arpeggio
----@field sound_vol? number Master volume (0.0-1.0)
+---@field sound_vol? number Sound-specific volume (0.0-1.0), modulated by master_volume
 
 ---@alias PlayCallback
 ---| "play" # Play immediately, interrupting current sound
@@ -61,5 +61,6 @@
 ---@field is_enabled boolean Whether the plugin is enabled (default: true)
 ---@field theme string|PlayerOne.Theme Theme name or custom sounds table (default: "chiptune")
 ---@field min_interval number Minimum interval between sounds in seconds (default: 0.05)
+---@field master_volume? number Master volume for all sounds (0.0-1.0, default: 1.0)
 ---@field binary PlayerOne.BinaryConfig Binary management configuration
 ---@field debug boolean Whether to print the debug message
