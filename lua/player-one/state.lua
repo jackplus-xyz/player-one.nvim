@@ -10,6 +10,11 @@
 local M = {}
 
 function M.setup(options)
+	-- Validate master_volume if provided
+	if options.master_volume ~= nil then
+		options.master_volume = math.max(0.0, math.min(1.0, options.master_volume))
+	end
+
 	for k, v in pairs(options) do
 		M[k] = v
 	end
@@ -30,8 +35,15 @@ function M.setup(options)
 	---@type number Autocmd group ID
 	M.group = vim.api.nvim_create_augroup("PlayerOne", { clear = true })
 
+	--- Whether cursor movement sounds are enabled
+	---@type boolean
+	M._is_cursormoved_enabled = false
+
+	-- Master volume for all sounds  
+	---@type number Master volume multiplier (0.0-1.0)
+	M.master_volume = nil
+
 	-- Internal state flags
-	---@type boolean Whether cursor movement sounds are enabled
 	M._is_cursormoved_enabled = false
 end
 

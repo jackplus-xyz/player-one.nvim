@@ -273,7 +273,8 @@ impl SoundParams {
             sample.hpf_ramp = converted.clamp(-1.0, 1.0);
         }
         if let Ok(v) = table.get::<f32>("sound_vol") {
-            volume = (((10_f32.powf(v / 10.0)).sqrt() + 1.0).ln()).clamp(0.0, 1.0);
+            // volume = (((10_f32.powf(v / 10.0)).sqrt() + 1.0).ln()).clamp(0.0, 1.0);
+            volume = v.clamp(0.0, 1.0);
         }
 
         Ok(SoundParams::new(sample).with_volume(volume))
