@@ -76,19 +76,23 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 ```lua
 ---@class PlayerOne.Config
 {
-  ---@type boolean Whether the sound theme is enabled
+  ---@type boolean Whether the plugin is enabled (default: true)
   is_enabled = true,
 
-  ---@type number Minimum interval between sounds in seconds
+  ---@type number Minimum interval between sounds in seconds (default: 0.05)
   ---Prevents sound overlapping and potential audio flooding when
   ---multiple keystrokes happen in rapid succession
   min_interval = 0.05,
 
-  ---@type PlayerOne.Theme|string Either a preset name or custom sounds table
+  ---@type string|PlayerOne.Theme Theme name or custom sounds table (default: "chiptune")
   ---Available presets: "chiptune", "crystal", "synth"
   theme = "chiptune",
+  
+  ---@type number Master volume for all sounds (0.0-1.0, default: 0.5)
+  ---This multiplies with each sound's individual volume
+  master_volume = 0.5,
 
-  ---@type boolean Whether to print the debug message
+  ---@type boolean Whether to print debug messages (default: false)
   debug = false,
 
   ---@class PlayerOne.BinaryConfig
@@ -129,14 +133,32 @@ Example:
 {
   "jackplus-xyz/player-one.nvim",
   opts = {
-  is_enabled = false, -- Start with sounds disabled until explicitly enabled
-  min_interval = 0.1, -- Increase delay between sounds to 100ms
-  theme = "synth",    -- Use the synthesizer sound theme
+    is_enabled = false, -- Start with sounds disabled until explicitly enabled
+    min_interval = 0.1, -- Increase delay between sounds to 100ms
+    theme = "synth",    -- Use the synthesizer sound theme
+    master_volume = 0.7, -- Set master volume to 70%
   }
 }
 ```
 
 For advanced configuration, see [Wiki](https://github.com/jackplus-xyz/player-one.nvim/wiki).
+
+### Volume Control
+
+The plugin has a two-level volume system:
+
+1. **Master Volume**: Controls the overall volume for all sounds (0.0-1.0)
+2. **Individual Sound Volume**: Each sound can have its own volume level
+
+The final volume is calculated as: `sound_vol × master_volume`
+
+For example:
+- If `master_volume = 0.5` and a sound has `volume = 0.8`, it will play at `0.4` volume
+- If `master_volume = 0.5` and no volume is specified for a sound, it defaults to a base of `1.0`, resulting in `0.5` volume
+
+This allows you to:
+- Control all sound volumes at once with the master volume
+- Fine-tune individual sounds relative to each other
 
 ### Theme
 
