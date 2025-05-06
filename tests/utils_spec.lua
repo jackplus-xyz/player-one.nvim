@@ -1,4 +1,5 @@
 local Utils = require("player-one.utils")
+local Config = require("player-one.config")
 local assert = require("luassert")
 
 describe("Utils", function()
@@ -217,7 +218,7 @@ describe("Utils", function()
             for _, volume_level in ipairs(volumes) do
                 params.sound_vol = volume_level
                 -- Simulate master_volume effect if needed for specific test scenarios,
-                -- otherwise, assume State.master_volume is 1.0 or as configured.
+                -- otherwise, assume Config.master_volume is 1.0 or as configured.
                 -- For this test, we are testing the sound_vol parameter itself.
                 local ok, err = pcall(function()
                     Utils.play_and_wait(params)
@@ -275,7 +276,7 @@ describe("Utils", function()
     end)
 
     describe("master_volume effect", function()
-        local State = require("player-one.state")
+        local Config = require("player-one.config")
         local Lib = require("player-one.binary") -- This is the actual binary functions module
         local captured_params_from_rust_call
 
@@ -283,7 +284,7 @@ describe("Utils", function()
         local original_lib_play_and_wait -- To store the original Lib.play_and_wait
 
         before_each(function()
-            original_master_volume = State.master_volume
+            original_master_volume = Config.master_volume
             original_lib_play_and_wait = Lib.play_and_wait -- Store the original function
 
             -- Mock the function that Utils.lua calls (which is Lib.play_and_wait)
@@ -303,14 +304,14 @@ describe("Utils", function()
         end)
 
         after_each(function()
-            State.master_volume = original_master_volume
+            Config.master_volume = original_master_volume
             Lib.play_and_wait = original_lib_play_and_wait -- Restore the original function
         end)
 
         local tolerance = 1e-9 -- Tolerance for floating point comparisons
 
         it("should apply master_volume when sound_vol is present in table config", function()
-            State.master_volume = 0.5
+            Config.master_volume = 0.5
             local sound_config = { wave_type = 0, sound_vol = 0.8 }
             Utils.play_and_wait(sound_config) -- Utils.play_and_wait will call the mocked Lib.play_and_wait
 
@@ -320,7 +321,7 @@ describe("Utils", function()
         end)
 
         it("should apply master_volume using 'volume' alias in table config", function()
-            State.master_volume = 0.5
+            Config.master_volume = 0.5
             local sound_config = { wave_type = 0, volume = 0.6 } -- Using 'volume' alias
             Utils.play_and_wait(sound_config)
 
@@ -331,7 +332,7 @@ describe("Utils", function()
         end)
 
         it("should apply master_volume when sound_vol is NOT present in table config", function()
-            State.master_volume = 0.7
+            Config.master_volume = 0.7
             local sound_config = { wave_type = 0 } -- No sound_vol or volume
             Utils.play_and_wait(sound_config)
 
@@ -342,7 +343,7 @@ describe("Utils", function()
         end)
 
         it("should result in 0.0 volume if master_volume is 0.0 (table config)", function()
-            State.master_volume = 0.0
+            Config.master_volume = 0.0
             local sound_config = { wave_type = 0, sound_vol = 0.8 }
             Utils.play_and_wait(sound_config)
 
@@ -352,7 +353,7 @@ describe("Utils", function()
         end)
 
         it("should use original sound_vol if master_volume is 1.0 (table config)", function()
-            State.master_volume = 1.0
+            Config.master_volume = 1.0
             local sound_config = { wave_type = 0, sound_vol = 0.6 }
             Utils.play_and_wait(sound_config)
 
@@ -362,7 +363,7 @@ describe("Utils", function()
         end)
 
         it("should use original sound_vol (clamped) if master_volume is nil (table config)", function()
-            State.master_volume = nil
+            Config.master_volume = nil
             local sound_config = { wave_type = 0, sound_vol = 0.7 }
             Utils.play_and_wait(sound_config)
 
@@ -372,7 +373,7 @@ describe("Utils", function()
         end)
 
         it("should pass nil sound_vol if master_volume is nil and sound_vol is not in config (table config)", function()
-            State.master_volume = nil
+            Config.master_volume = nil
             local sound_config = { wave_type = 0 } -- No sound_vol
             Utils.play_and_wait(sound_config)
 
@@ -383,7 +384,7 @@ describe("Utils", function()
 
         -- Tests for JSON config
         it("should apply master_volume when sound_vol is present in JSON config", function()
-            State.master_volume = 0.5
+            Config.master_volume = 0.5
             -- sanitize_json_params will process this, then it's passed to the mock
             local sound_config_json_str = vim.json.encode({ wave_type = 0, sound_vol = 0.8 })
             Utils.play_and_wait(sound_config_json_str)
@@ -394,7 +395,7 @@ describe("Utils", function()
         end)
 
         it("should apply master_volume when sound_vol is NOT present in JSON config", function()
-            State.master_volume = 0.7
+            Config.master_volume = 0.7
             local sound_config_json_str = vim.json.encode({ wave_type = 0 }) -- No sound_vol
             Utils.play_and_wait(sound_config_json_str)
 
@@ -404,7 +405,7 @@ describe("Utils", function()
         end)
 
         it("should pass nil sound_vol if master_volume is nil and sound_vol is not in JSON config", function()
-            State.master_volume = nil
+            Config.master_volume = nil
             local sound_config_json_str = vim.json.encode({ wave_type = 0 }) -- No sound_vol
             Utils.play_and_wait(sound_config_json_str)
 

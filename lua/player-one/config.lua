@@ -1,5 +1,12 @@
---- Configuration module for PlayerOne
+--- Configuration and state management module for PlayerOne
+--- Maintains global configuration and plugin state
 ---@module 'player-one.config'
+---@usage [[
+---# Access plugin configuration and state
+---local Config = require("player-one.config")
+---print(Config.is_enabled) -- Check if plugin is enabled
+---print(Config.curr_theme) -- Get current theme
+---]]
 
 local M = {}
 
@@ -23,6 +30,20 @@ local defaults = {
     },
     debug = false,
 }
+
+-- Available built-in themes
+---@type string[] List of available theme names
+M.themes = { "chiptune", "synth", "crystal" }
+
+-- Internal state properties
+---@type boolean Whether cursor movement sounds are enabled
+M._is_cursormoved_enabled = false
+
+---@type number|nil Autocmd group ID
+M.group = nil
+
+---@type string|table Current theme name or custom theme table
+M.curr_theme = nil
 
 --- Setup PlayerOne with the provided configuration
 ---@param options? PlayerOne.Config Configuration table to override defaults
@@ -52,14 +73,36 @@ function M.setup(options)
     options = options or {}
     M.options = vim.deepcopy(defaults)
     M.options = vim.tbl_deep_extend("force", M.options, options)
-
-    local State = require("player-one.state")
+    
+    -- Copy options to top level for direct access
+    for k, v in pairs(M.options) do
+        M[k] = v
+    end
+    
+    -- Handle master_volume validation
+    if options.master_volume ~= nil then
+        M.master_volume = math.max(0.0, math.min(1.0, options.master_volume))
+    end
+    
+    -- Handle theme setup
+    if options.theme then
+        M.curr_theme = options.theme
+    end
+    
+    -- Add user theme if a custom theme table was provided
+    if type(options.theme) == "table" then
+        table.insert(M.themes, "user")
+    end
+    
+    -- Create autocmd group for plugin events
+    ---@type number Autocmd group ID
+    M.group = vim.api.nvim_create_augroup("PlayerOne", { clear = true })
+    
     local Api = require("player-one.api")
-    State.setup(M.options)
     Api.setup()
     setmetatable(M, Api)
 
-    if State.is_enabled then
+    if M.is_enabled then
         Api.enable()
     end
 end

@@ -1,5 +1,5 @@
 local Lib = require("player-one.binary")
-local State = require("player-one.state")
+local Config = require("player-one.config")
 
 --- Sound utility functions for PlayerOne
 --- Provides core functionality for sound parameter validation, playback control, and event handling.
@@ -107,15 +107,15 @@ local function sanitize_params(params)
     end
 
     -- Apply master_volume logic
-    if State.master_volume ~= nil then
+    if Config.master_volume ~= nil then
         local base_vol_for_calc = (sanitized.sound_vol == nil) and 1.0 or sanitized.sound_vol
-        local final_vol = base_vol_for_calc * State.master_volume
+        local final_vol = base_vol_for_calc * Config.master_volume
         sanitized.sound_vol = math.max(0.0, math.min(1.0, final_vol))
     elseif sanitized.sound_vol ~= nil then
         -- Ensure individual sound_vol is clamped even if master_volume is not set
         sanitized.sound_vol = math.max(0.0, math.min(1.0, sanitized.sound_vol))
     end
-    -- If State.master_volume is nil and params.sound_vol (or alias) was also nil,
+    -- If Config.master_volume is nil and params.sound_vol (or alias) was also nil,
     -- sanitized.sound_vol remains nil, and the binary will use its default volume.
 
     return sanitized
@@ -168,15 +168,15 @@ local function sanitize_json_params(json_params)
     end
 
     -- Apply master_volume logic to params_decoded.sound_vol
-    if State.master_volume ~= nil then
+    if Config.master_volume ~= nil then
         local base_vol_for_calc = (params_decoded.sound_vol == nil) and 1.0 or params_decoded.sound_vol
-        local final_vol = base_vol_for_calc * State.master_volume
+        local final_vol = base_vol_for_calc * Config.master_volume
         params_decoded.sound_vol = math.max(0.0, math.min(1.0, final_vol))
     elseif params_decoded.sound_vol ~= nil then
         -- Ensure individual sound_vol is clamped even if master_volume is not set
         params_decoded.sound_vol = math.max(0.0, math.min(1.0, params_decoded.sound_vol))
     end
-    -- If State.master_volume is nil and params_decoded.sound_vol was also nil,
+    -- If Config.master_volume is nil and params_decoded.sound_vol was also nil,
     -- params_decoded.sound_vol remains nil.
 
     return vim.json.encode(params_decoded)
@@ -187,7 +187,7 @@ end
 ---@param callback function Function to call with processed parameters
 ---@return any Result from the callback
 local function process_sound_params(params, callback)
-    local min_interval = State.min_interval or 0
+    local min_interval = Config.min_interval or 0
     local current_time = vim.uv.now()
     local time_diff = (current_time - last_play_time) / 1000 -- Convert to seconds
 
@@ -236,9 +236,9 @@ end
 ---@param callback? PlayCallback How to play the sound
 function M._create_autocmds(autocmd, sound, callback)
     vim.api.nvim_create_autocmd(autocmd, {
-        group = State.group,
+        group = Config.group,
         callback = function()
-            if State.is_enabled then
+            if Config.is_enabled then
                 if callback then
                     if type(callback) == "function" then
                         callback(sound)
@@ -265,14 +265,14 @@ end
 
 ---Clear all plugin autocommands
 function M.clear_autocmds()
-    vim.api.nvim_clear_autocmds({ group = State.group })
+    vim.api.nvim_clear_autocmds({ group = Config.group })
 end
 
 ---Load a sound theme
 ---@param theme? string|PlayerOne.Theme Theme name or custom theme table
 function M.load_theme(theme)
     if theme == "default" or not theme then
-        theme = State.curr_theme
+        theme = Config.curr_theme
         if not theme then
             return
         end
@@ -280,7 +280,7 @@ function M.load_theme(theme)
 
     M.clear_autocmds()
 
-    local themes = State.themes
+    local themes = Config.themes
     if type(theme) == "string" then
         if not vim.tbl_contains(themes, theme) then
             error(string.format("Invalid preset '%s'. Available presets: %s", theme, table.concat(themes, ", ")))
