@@ -273,4 +273,144 @@ describe("Utils", function()
             end
         end)
     end)
+
+    describe("master_volume effect", function()
+        local State = require("player-one.state")
+        local Lib = require("player-one.binary") -- This is the actual binary functions module
+        local captured_params_from_rust_call
+
+        local original_master_volume
+        local original_lib_play_and_wait -- To store the original Lib.play_and_wait
+
+        before_each(function()
+            original_master_volume = State.master_volume
+            original_lib_play_and_wait = Lib.play_and_wait -- Store the original function
+
+            -- Mock the function that Utils.lua calls (which is Lib.play_and_wait)
+            Lib.play_and_wait = function(params)
+                if type(params) == "string" then
+                    local ok, decoded = pcall(vim.json.decode, params)
+                    if ok then
+                        captured_params_from_rust_call = decoded
+                    else
+                        captured_params_from_rust_call = { error = "Failed to decode JSON", raw = params }
+                    end
+                else
+                    captured_params_from_rust_call = params
+                end
+            end
+            captured_params_from_rust_call = nil -- Reset for each test
+        end)
+
+        after_each(function()
+            State.master_volume = original_master_volume
+            Lib.play_and_wait = original_lib_play_and_wait -- Restore the original function
+        end)
+
+        local tolerance = 1e-9 -- Tolerance for floating point comparisons
+
+        it("should apply master_volume when sound_vol is present in table config", function()
+            State.master_volume = 0.5
+            local sound_config = { wave_type = 0, sound_vol = 0.8 }
+            Utils.play_and_wait(sound_config) -- Utils.play_and_wait will call the mocked Lib.play_and_wait
+
+            assert.is_not_nil(captured_params_from_rust_call)
+            assert.is_number(captured_params_from_rust_call.sound_vol)
+            assert.is_near(0.4, captured_params_from_rust_call.sound_vol, tolerance)
+        end)
+
+        it("should apply master_volume using 'volume' alias in table config", function()
+            State.master_volume = 0.5
+            local sound_config = { wave_type = 0, volume = 0.6 } -- Using 'volume' alias
+            Utils.play_and_wait(sound_config)
+
+            assert.is_not_nil(captured_params_from_rust_call)
+            assert.is_number(captured_params_from_rust_call.sound_vol)
+            assert.is_near(0.3, captured_params_from_rust_call.sound_vol, tolerance)
+            assert.is_nil(captured_params_from_rust_call.volume, "'volume' alias should be removed by sanitize_params")
+        end)
+
+        it("should apply master_volume when sound_vol is NOT present in table config", function()
+            State.master_volume = 0.7
+            local sound_config = { wave_type = 0 } -- No sound_vol or volume
+            Utils.play_and_wait(sound_config)
+
+            assert.is_not_nil(captured_params_from_rust_call)
+            assert.is_number(captured_params_from_rust_call.sound_vol)
+            -- Expected: 1.0 (default base for calc) * 0.7 (master_volume) = 0.7
+            assert.is_near(0.7, captured_params_from_rust_call.sound_vol, tolerance)
+        end)
+
+        it("should result in 0.0 volume if master_volume is 0.0 (table config)", function()
+            State.master_volume = 0.0
+            local sound_config = { wave_type = 0, sound_vol = 0.8 }
+            Utils.play_and_wait(sound_config)
+
+            assert.is_not_nil(captured_params_from_rust_call)
+            assert.is_number(captured_params_from_rust_call.sound_vol)
+            assert.is_near(0.0, captured_params_from_rust_call.sound_vol, tolerance)
+        end)
+
+        it("should use original sound_vol if master_volume is 1.0 (table config)", function()
+            State.master_volume = 1.0
+            local sound_config = { wave_type = 0, sound_vol = 0.6 }
+            Utils.play_and_wait(sound_config)
+
+            assert.is_not_nil(captured_params_from_rust_call)
+            assert.is_number(captured_params_from_rust_call.sound_vol)
+            assert.is_near(0.6, captured_params_from_rust_call.sound_vol, tolerance)
+        end)
+
+        it("should use original sound_vol (clamped) if master_volume is nil (table config)", function()
+            State.master_volume = nil
+            local sound_config = { wave_type = 0, sound_vol = 0.7 }
+            Utils.play_and_wait(sound_config)
+
+            assert.is_not_nil(captured_params_from_rust_call)
+            assert.is_number(captured_params_from_rust_call.sound_vol)
+            assert.is_near(0.7, captured_params_from_rust_call.sound_vol, tolerance)
+        end)
+
+        it("should pass nil sound_vol if master_volume is nil and sound_vol is not in config (table config)", function()
+            State.master_volume = nil
+            local sound_config = { wave_type = 0 } -- No sound_vol
+            Utils.play_and_wait(sound_config)
+
+            assert.is_not_nil(captured_params_from_rust_call)
+            assert.is_nil(captured_params_from_rust_call.sound_vol,
+                "sound_vol should be nil when not in config and master_volume is nil")
+        end)
+
+        -- Tests for JSON config
+        it("should apply master_volume when sound_vol is present in JSON config", function()
+            State.master_volume = 0.5
+            -- sanitize_json_params will process this, then it's passed to the mock
+            local sound_config_json_str = vim.json.encode({ wave_type = 0, sound_vol = 0.8 })
+            Utils.play_and_wait(sound_config_json_str)
+
+            assert.is_not_nil(captured_params_from_rust_call) -- This is now the decoded table
+            assert.is_number(captured_params_from_rust_call.sound_vol)
+            assert.is_near(0.4, captured_params_from_rust_call.sound_vol, tolerance)
+        end)
+
+        it("should apply master_volume when sound_vol is NOT present in JSON config", function()
+            State.master_volume = 0.7
+            local sound_config_json_str = vim.json.encode({ wave_type = 0 }) -- No sound_vol
+            Utils.play_and_wait(sound_config_json_str)
+
+            assert.is_not_nil(captured_params_from_rust_call)
+            assert.is_number(captured_params_from_rust_call.sound_vol)
+            assert.is_near(0.7, captured_params_from_rust_call.sound_vol, tolerance)
+        end)
+
+        it("should pass nil sound_vol if master_volume is nil and sound_vol is not in JSON config", function()
+            State.master_volume = nil
+            local sound_config_json_str = vim.json.encode({ wave_type = 0 }) -- No sound_vol
+            Utils.play_and_wait(sound_config_json_str)
+
+            assert.is_not_nil(captured_params_from_rust_call)
+            assert.is_nil(captured_params_from_rust_call.sound_vol,
+                "sound_vol should be nil when not in JSON and master_volume is nil")
+        end)
+    end)
 end)
