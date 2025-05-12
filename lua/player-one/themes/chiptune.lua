@@ -5,24 +5,6 @@ local Config = require("player-one.config")
 
 local M = {}
 
-local function setup_cursormoved()
-	if Config._is_cursormoved_enabled then
-		Utils._create_autocmds("CursorMoved", {
-			wave_type = 1,
-			base_freq = 440.0,
-			env_attack = 0.0,
-			env_sustain = 0.001,
-			env_decay = 0.05,
-		})
-	end
-end
-
-function M.setup()
-	setup_cursormoved()
-end
-
-M.setup()
-
 ---@type PlayerOne.Theme
 return {
 	{
@@ -37,8 +19,22 @@ return {
 			Utils.append(sound)
 			vim.defer_fn(function()
 				Config._is_cursormoved_enabled = true
-				setup_cursormoved()
 			end, 1000)
+		end,
+	},
+	{
+		event = "CursorMoved",
+		sound = {
+			wave_type = 1,
+			base_freq = 440.0,
+			env_attack = 0.0,
+			env_sustain = 0.001,
+			env_decay = 0.05,
+		},
+		callback = function(sound)
+			if Config._is_cursormoved_enabled == true then
+				Utils.append(sound)
+			end
 		end,
 	},
 	{
