@@ -72,11 +72,37 @@ end
 ---Load a sound theme
 ---@param theme string|PlayerOne.Theme|nil Theme name or custom theme table
 ---@return boolean|nil success Whether the theme was loaded successfully
-function M.load_theme(theme)
-	if not Config.is_enabled then
-		return
+function M.load_theme(theme_spec)
+	if not theme_spec then
+		vim.notify("PlayerOne API: M.load_theme called with nil theme_spec.", vim.log.levels.WARN)
+		return false
 	end
-	local ok, err = pcall(Utils.load_theme, theme)
+
+	Config.curr_theme = theme_spec -- Always update the desired theme
+
+	-- Add "user" to themes list if a custom table is provided
+	if type(theme_spec) == "table" then
+		local user_theme_present = false
+		for _, t_name in ipairs(Config.themes) do
+			if t_name == "user" then
+				user_theme_present = true
+				break
+			end
+		end
+		if not user_theme_present then
+			table.insert(Config.themes, "user")
+		end
+	end
+
+	if not Config.is_enabled then
+		-- Theme choice is updated, but don't load it if disabled.
+		-- It will be loaded when M.enable() is called.
+		-- The caller (e.g., PlayerOneLoad command) will notify the user.
+		return true -- Indicate success in setting the theme preference.
+	end
+
+	-- If enabled, proceed to load the theme via Utils
+	local ok, err = pcall(Utils.load_theme, theme_spec)
 	return handle_error(ok, err)
 end
 
