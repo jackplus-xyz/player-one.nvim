@@ -138,8 +138,6 @@ function M.toggle()
 	end
 end
 
--- TODO: add api to play internal presets & sfxr presets
-
 function M.setup()
 	vim.api.nvim_create_user_command("PlayerOneEnable", M.enable, { desc = "Enable Player One" })
 	vim.api.nvim_create_user_command("PlayerOneDisable", M.disable, { desc = "Disable Player One" })

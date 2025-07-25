@@ -2,7 +2,6 @@
 --- Main module that provides the plugin interface
 ---@module 'player-one'
 
--- TODO: add checkhealth #11
 local Config = require("player-one.config")
 
 ---@class PlayerOne
