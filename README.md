@@ -289,16 +289,18 @@ vim.api.nvim_create_autocmd("ModeChanged", {
 
 ## Roadmap
 
-- [ ] Performance optimizations
+- [x] Multi-track melody playback
+- [x] Performance optimizations
+  - [x] Binary caching with configurable timeout
+  - [x] Sound throttling to prevent audio flooding
   - [ ] Implement caching for frequently used sounds
+- [x] Test Coverage Expansion
+  - [x] Unit tests for core components
+  - [x] Integration tests
+  - [ ] Performance benchmarks
 - [ ] Documentation Improvements
   - [ ] Add detailed API reference
   - [ ] Include code examples
-- [ ] Test Coverage Expansion
-  - [ ] Unit tests for core components
-  - [ ] Integration tests
-  - [ ] Performance benchmarks
-- [ ] Multi-track melody playback
 
 ## Credits
 
