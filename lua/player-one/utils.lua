@@ -238,7 +238,7 @@ function M._create_autocmds(autocmd, sound, callback)
     vim.api.nvim_create_autocmd(autocmd, {
         group = Config.group,
         callback = function()
-            if Config.is_enabled then
+            if Config.is_enabled and Config.is_sound_enabled(autocmd) then
                 if callback then
                     if type(callback) == "function" then
                         callback(sound)
@@ -298,7 +298,11 @@ function M.load_theme(theme)
         if not v.sound then
             error(string.format("Missing 'sound' in sound configuration at index %d", i))
         end
-        M._create_autocmds(v.event, v.sound, v.callback)
+        
+        -- Only create autocmds for enabled sound events
+        if Config.is_sound_enabled(v.event) then
+            M._create_autocmds(v.event, v.sound, v.callback)
+        end
     end
 end
 

@@ -47,7 +47,6 @@ https://github.com/user-attachments/assets/f72a038f-507c-49cc-9506-37494cbf8ed8
 1. Install with a plugin manager of your choice.
 
 2. Restart NeoVim and you should now hear:
-
    - A startup melody when Neovim launches
    - Typing sounds in insert mode
    - Save confirmation sounds
@@ -87,10 +86,23 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
   ---@type string|PlayerOne.Theme Theme name or custom sounds table (default: "chiptune")
   ---Available presets: "chiptune", "crystal", "synth"
   theme = "chiptune",
-  
+
   ---@type number Master volume for all sounds (0.0-1.0, default: 0.5)
   ---This multiplies with each sound's individual volume
   master_volume = 0.5,
+
+  ---@type table<string, boolean> Individual sound event toggles (default: all true)
+  ---Enable or disable specific sound events
+  sound_toggles = {
+    VimEnter = true,        -- Startup melody
+    VimLeavePre = true,     -- Exit sound
+    TextChangedI = true,    -- Typing sounds in insert mode
+    BufWritePost = true,    -- File save confirmation
+    TextYankPost = true,    -- Copy/yank confirmation
+    CursorMoved = true,     -- Cursor movement sounds
+    CmdlineEnter = true,    -- Command mode entry
+    CmdlineChanged = true,  -- Command line typing
+  },
 
   ---@type boolean Whether to print debug messages (default: false)
   debug = false,
@@ -141,6 +153,28 @@ Example:
 }
 ```
 
+### Sound Control
+
+You can enable or disable individual sound events using the `sound_toggles` configuration:
+
+```lua
+{
+  "jackplus-xyz/player-one.nvim",
+  opts = {
+    sound_toggles = {
+      VimEnter = true,        -- Keep startup melody
+      VimLeavePre = true,     -- Keep exit sound
+      TextChangedI = false,   -- Disable typing sounds (common preference)
+      BufWritePost = true,    -- Keep save confirmation
+      TextYankPost = true,    -- Keep copy confirmation
+      CursorMoved = false,    -- Disable cursor sounds (most common)
+      CmdlineEnter = true,    -- Keep command mode entry
+      CmdlineChanged = false, -- Disable command line typing
+    }
+  }
+}
+```
+
 For advanced configuration, see [Wiki](https://github.com/jackplus-xyz/player-one.nvim/wiki).
 
 ### Volume Control
@@ -153,10 +187,12 @@ The plugin has a two-level volume system:
 The final volume is calculated as: `sound_vol × master_volume`
 
 For example:
+
 - If `master_volume = 0.5` and a sound has `volume = 0.8`, it will play at `0.4` volume
 - If `master_volume = 0.5` and no volume is specified for a sound, it defaults to a base of `1.0`, resulting in `0.5` volume
 
 This allows you to:
+
 - Control all sound volumes at once with the master volume
 - Fine-tune individual sounds relative to each other
 

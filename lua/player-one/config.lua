@@ -16,6 +16,16 @@ local defaults = {
     min_interval = 0.05,
     theme = "chiptune",
     master_volume = 0.5,
+    sound_toggles = {
+        VimEnter = true,
+        VimLeavePre = true,
+        TextChangedI = true,
+        BufWritePost = true,
+        TextYankPost = true,
+        CursorMoved = true,
+        CmdlineEnter = true,
+        CmdlineChanged = true,
+    },
     binary = {
         auto_update = true,
         cache_timeout = 3600,
@@ -34,6 +44,23 @@ local defaults = {
 -- Available built-in themes
 ---@type string[] List of available theme names
 M.themes = { "chiptune", "synth", "crystal" }
+
+--- Check if a sound event is enabled based on toggle configuration
+---@param event string The event name to check
+---@return boolean enabled Whether the event should play sounds
+function M.is_sound_enabled(event)
+    if not M.is_enabled then
+        return false
+    end
+    
+    -- Check if the specific event is enabled (default to true for unknown events)
+    if M.sound_toggles[event] ~= nil then
+        return M.sound_toggles[event]
+    end
+    
+    return true
+end
+
 
 -- Internal state properties
 ---@type boolean Whether cursor movement sounds are enabled
