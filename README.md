@@ -229,6 +229,64 @@ To create your own theme, see [Theme](https://github.com/jackplus-xyz/player-one
 | `:PlayerOneClearCache`   | Clear the PlayerOne binary cache      |
 | `:PlayerOneUpdate`       | Update the PlayerOne binary           |
 
+### Third-Party Plugin Integration
+
+For plugins like [folke/flash.nvim](https://github.com/folke/flash.nvim), [ggandor/leap.nvim](https://github.com/ggandor/leap.nvim), or others, you can easily add sounds using player-one's API:
+
+#### Flash.nvim Integration
+
+```lua
+-- Option 1: Add to flash configuration
+require("flash").setup({
+  action = function(match, state)
+    -- Play sound before jumping
+    require("player-one").play({
+      wave_type = 1,
+      base_freq = 1200,
+      env_decay = 0.05
+    })
+    -- Continue with default jump behavior
+    require("flash.jump").jump(match, state)
+  end
+})
+
+-- Option 2: Add to flash keymaps
+vim.keymap.set("n", "s", function()
+  require("player-one").play({
+    wave_type = 2,
+    base_freq = 800,
+    env_decay = 0.1
+  })
+  require("flash").jump()
+end)
+```
+
+#### Mode Switch Sounds
+
+```lua
+-- Add sounds for mode transitions
+vim.api.nvim_create_autocmd("ModeChanged", {
+  callback = function()
+    local new_mode = vim.v.event.new_mode
+    if new_mode == "i" then
+      -- Entering insert mode
+      require("player-one").play({
+        wave_type = 1,
+        base_freq = 659.25,
+        env_decay = 0.1
+      })
+    elseif new_mode == "n" then
+      -- Entering normal mode
+      require("player-one").play({
+        wave_type = 2,
+        base_freq = 329.63,
+        env_decay = 0.1
+      })
+    end
+  end
+})
+```
+
 ## Roadmap
 
 - [ ] Performance optimizations
