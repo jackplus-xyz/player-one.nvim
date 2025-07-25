@@ -91,17 +91,17 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
   ---This multiplies with each sound's individual volume
   master_volume = 0.5,
 
-  ---@type table<string, boolean> Individual sound event toggles (default: all true)
-  ---Enable or disable specific sound events
-  sound_toggles = {
-    VimEnter = true,        -- Startup melody
-    VimLeavePre = true,     -- Exit sound
-    TextChangedI = true,    -- Typing sounds in insert mode
-    BufWritePost = true,    -- File save confirmation
-    TextYankPost = true,    -- Copy/yank confirmation
-    CursorMoved = true,     -- Cursor movement sounds
-    CmdlineEnter = true,    -- Command mode entry
-    CmdlineChanged = true,  -- Command line typing
+  ---@type table<string, table<string, boolean>> Theme-specific sound disables
+  ---Only specify sounds you want to disable (all sounds enabled by default)
+  theme_config = {
+    -- Example: disable specific sounds for specific themes
+    -- chiptune = {
+    --   CursorMoved = false,    -- Disable cursor movement sounds for chiptune
+    --   TextChangedI = false,   -- Disable typing sounds for chiptune
+    -- },
+    -- synth = {
+    --   VimEnter = false,       -- Disable startup melody for synth theme
+    -- },
   },
 
   ---@type boolean Whether to print debug messages (default: false)
@@ -155,25 +155,35 @@ Example:
 
 ### Sound Control
 
-You can enable or disable individual sound events using the `sound_toggles` configuration:
+You can disable individual sound events for specific themes using the `theme_config` option. **All sounds are enabled by default** - you only need to specify what you want to disable:
 
 ```lua
 {
   "jackplus-xyz/player-one.nvim",
   opts = {
-    sound_toggles = {
-      VimEnter = true,        -- Keep startup melody
-      VimLeavePre = true,     -- Keep exit sound
-      TextChangedI = false,   -- Disable typing sounds (common preference)
-      BufWritePost = true,    -- Keep save confirmation
-      TextYankPost = true,    -- Keep copy confirmation
-      CursorMoved = false,    -- Disable cursor sounds (most common)
-      CmdlineEnter = true,    -- Keep command mode entry
-      CmdlineChanged = false, -- Disable command line typing
+    theme = "chiptune",
+    theme_config = {
+      chiptune = {
+        CursorMoved = false,    -- Disable cursor sounds (most common!)
+        TextChangedI = false,   -- Disable typing sounds
+      },
+      synth = {
+        VimEnter = false,       -- Disable startup melody for synth theme
+        CmdlineChanged = false, -- Disable command line typing
+      },
+      crystal = {
+        -- Maybe you love all crystal sounds, so leave this empty!
+      }
     }
   }
 }
 ```
+
+This elegant approach means:
+
+- **Clean config** - Only specify what you want to turn off
+- **Theme-specific** - Different sound preferences for different themes
+- **Sensible defaults** - All sounds work out of the box
 
 For advanced configuration, see [Wiki](https://github.com/jackplus-xyz/player-one.nvim/wiki).
 
